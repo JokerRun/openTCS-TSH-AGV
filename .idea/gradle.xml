@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="delegatedBuild" value="true" />
+        <option name="testRunner" value="GRADLE" />
+        <option name="distributionType" value="DEFAULT_WRAPPED" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleHome" value="$USER_HOME$/apps/gradle-6.0.1" />
+        <option name="gradleJvm" value="11" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/openTCS-Tsh-CommAdapter-Vehicle" />
+            <option value="$PROJECT_DIR$/openTCS-Tsh-Common" />
+            <option value="$PROJECT_DIR$/openTCS-Tsh-Documentation" />
+            <option value="$PROJECT_DIR$/openTCS-Tsh-Kernel" />
+            <option value="$PROJECT_DIR$/openTCS-Tsh-KernelControlCenter" />
+            <option value="$PROJECT_DIR$/openTCS-Tsh-PlantOverview" />
+          </set>
+        </option>
+        <option name="useAutoImport" value="true" />
+        <option name="useQualifiedModuleNames" value="true" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

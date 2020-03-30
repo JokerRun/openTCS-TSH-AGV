@@ -1,0 +1,8 @@
+rootProject.name = 'openTCS-Tsh'
+
+include 'openTCS-Tsh-Kernel'
+include 'openTCS-Tsh-KernelControlCenter'
+include 'openTCS-Tsh-PlantOverview'
+include 'openTCS-Tsh-Documentation'
+include 'openTCS-Tsh-Common'
+include 'openTCS-Tsh-CommAdapter-Vehicle'
