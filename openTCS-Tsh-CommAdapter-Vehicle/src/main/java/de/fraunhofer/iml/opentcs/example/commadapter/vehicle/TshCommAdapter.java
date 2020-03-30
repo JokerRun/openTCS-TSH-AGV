@@ -5,8 +5,6 @@ package de.fraunhofer.iml.opentcs.example.commadapter.vehicle;
 
 import com.google.common.primitives.Ints;
 import com.google.inject.assistedinject.Assisted;
-import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.comm.VehicleTelegramDecoder;
-import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.comm.VehicleTelegramEncoder;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.exchange.TshProcessModelTO;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.OrderRequest;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.OrderResponse;
@@ -14,28 +12,7 @@ import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.StateRequ
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.StateResponse;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.StateResponse.LoadState;
 import de.fraunhofer.iml.opentcs.example.common.dispatching.LoadAction;
-import de.fraunhofer.iml.opentcs.example.common.telegrams.BoundedCounter;
-import static de.fraunhofer.iml.opentcs.example.common.telegrams.BoundedCounter.UINT16_MAX_VALUE;
-import de.fraunhofer.iml.opentcs.example.common.telegrams.Request;
-import de.fraunhofer.iml.opentcs.example.common.telegrams.RequestResponseMatcher;
-import de.fraunhofer.iml.opentcs.example.common.telegrams.Response;
-import de.fraunhofer.iml.opentcs.example.common.telegrams.StateRequesterTask;
-import de.fraunhofer.iml.opentcs.example.common.telegrams.Telegram;
-import de.fraunhofer.iml.opentcs.example.common.telegrams.TelegramSender;
-import io.netty.channel.ChannelHandler;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import static java.util.Objects.requireNonNull;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.inject.Inject;
-import org.opentcs.contrib.tcp.netty.ConnectionEventListener;
-import org.opentcs.contrib.tcp.netty.TcpClientChannelManager;
+import de.fraunhofer.iml.opentcs.example.common.telegrams.*;
 import org.opentcs.data.model.Vehicle;
 import org.opentcs.data.order.DriveOrder;
 import org.opentcs.drivers.vehicle.BasicVehicleCommAdapter;
@@ -46,6 +23,14 @@ import org.opentcs.util.ExplainedBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.beans.PropertyChangeEvent;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static de.fraunhofer.iml.opentcs.example.common.telegrams.BoundedCounter.UINT16_MAX_VALUE;
+import static java.util.Objects.requireNonNull;
+
 /**
  * An example implementation for a communication adapter.
  *
@@ -53,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TshCommAdapter
     extends BasicVehicleCommAdapter
-    implements ConnectionEventListener<Response>,
+    implements
                TelegramSender {
 
   /**
@@ -76,10 +61,6 @@ public class TshCommAdapter
    * Maps commands to order IDs so we know which command to report as finished.
    */
   private final Map<MovementCommand, Integer> orderIds = new ConcurrentHashMap<>();
-  /**
-   * Manages the channel to the vehicle.
-   */
-  private TcpClientChannelManager<Request, Response> vehicleChannelManager;
   /**
    * Matches requests to responses and holds a queue for pending requests.
    */
@@ -128,12 +109,7 @@ public class TshCommAdapter
     }
 
     //Create the channel manager responsible for connections with the vehicle
-    vehicleChannelManager = new TcpClientChannelManager<>(this,
-                                                          this::getChannelHandlers,
-                                                          getProcessModel().getVehicleIdleTimeout(),
-                                                          getProcessModel().isLoggingEnabled());
     //Initialize the channel manager
-    vehicleChannelManager.initialize();
     super.enable();
   }
 
@@ -144,8 +120,6 @@ public class TshCommAdapter
     }
 
     super.disable();
-    vehicleChannelManager.terminate();
-    vehicleChannelManager = null;
   }
 
   @Override
@@ -156,28 +130,33 @@ public class TshCommAdapter
 
   @Override
   protected synchronized void connectVehicle() {
-    if (vehicleChannelManager == null) {
-      LOG.warn("{}: VehicleChannelManager not present.", getName());
-      return;
-    }
 
-    vehicleChannelManager.connect(getProcessModel().getVehicleHost(),
-                                  getProcessModel().getVehiclePort());
+      if (!isEnabled()) {
+          return;
+      }
+      getProcessModel().getVehicleHost();
+      getProcessModel().getVehiclePort();
+
+      LOG.debug("{}: connected", getName());
+      getProcessModel().setCommAdapterConnected(true);
+      // Check for resending last request
+      requestResponseMatcher.checkForSendingNextRequest();
+
+
   }
 
   @Override
   protected synchronized void disconnectVehicle() {
-    if (vehicleChannelManager == null) {
-      LOG.warn("{}: VehicleChannelManager not present.", getName());
-      return;
-    }
-
-    vehicleChannelManager.disconnect();
+      LOG.debug("{}: disconnected", getName());
+      getProcessModel().setCommAdapterConnected(false);
+      getProcessModel().setVehicleIdle(true);
+      getProcessModel().setVehicleState(Vehicle.State.UNKNOWN);
   }
 
   @Override
   protected synchronized boolean isVehicleConnected() {
-    return vehicleChannelManager != null && vehicleChannelManager.isConnected();
+      return true;
+//    return vehicleChannelManager != null && vehicleChannelManager.isConnected();
   }
 
   @Override
@@ -188,14 +167,6 @@ public class TshCommAdapter
     }
 
     // Handling of events from the vehicle gui panels start here
-    if (Objects.equals(evt.getPropertyName(),
-                       VehicleProcessModel.Attribute.COMM_ADAPTER_CONNECTED.name())) {
-      if (getProcessModel().isCommAdapterConnected()) {
-        // Once the connection is established, ensure that logging is enabled/disabled for it as
-        // configured by the user.
-        vehicleChannelManager.setLoggingEnabled(getProcessModel().isLoggingEnabled());
-      }
-    }
     if (Objects.equals(evt.getPropertyName(),
                        VehicleProcessModel.Attribute.COMM_ADAPTER_CONNECTED.name())
         || Objects.equals(evt.getPropertyName(),
@@ -227,7 +198,7 @@ public class TshCommAdapter
 
   @Override
   protected VehicleProcessModelTO createCustomTransferableProcessModel() {
-    //Add extra information of the vehicle when sending to other software like control center or 
+    //Add extra information of the vehicle when sending to other software like control center or
     //plant overview
     return new TshProcessModelTO()
         .setVehicleRef(getProcessModel().getVehicleReference())
@@ -260,7 +231,7 @@ public class TshCommAdapter
                 telegram.getDestinationId(),
                 telegram.getDestinationAction());
 
-      // Add the telegram to the queue. Telegram will be send later when its the first telegram in 
+      // Add the telegram to the queue. Telegram will be send later when its the first telegram in
       // the queue. This ensures that we always wait for a response until we send a new request.
       requestResponseMatcher.enqueueRequest(telegram);
       LOG.debug("{}: Finished enqueuing order telegram.", getName());
@@ -327,55 +298,9 @@ public class TshCommAdapter
     //Process messages sent from the kernel or a kernel extension
   }
 
-  @Override
-  public void onConnect() {
-    if (!isEnabled()) {
-      return;
-    }
-    LOG.debug("{}: connected", getName());
-    getProcessModel().setCommAdapterConnected(true);
-    // Check for resending last request
-    requestResponseMatcher.checkForSendingNextRequest();
-  }
 
-  @Override
-  public void onFailedConnectionAttempt() {
-    if (!isEnabled()) {
-      return;
-    }
-    getProcessModel().setCommAdapterConnected(false);
-    if (isEnabled() && getProcessModel().isReconnectingOnConnectionLoss()) {
-      vehicleChannelManager.scheduleConnect(getProcessModel().getVehicleHost(),
-                                            getProcessModel().getVehiclePort(),
-                                            getProcessModel().getReconnectDelay());
-    }
-  }
 
-  @Override
-  public void onDisconnect() {
-    LOG.debug("{}: disconnected", getName());
-    getProcessModel().setCommAdapterConnected(false);
-    getProcessModel().setVehicleIdle(true);
-    getProcessModel().setVehicleState(Vehicle.State.UNKNOWN);
-    if (isEnabled() && getProcessModel().isReconnectingOnConnectionLoss()) {
-      vehicleChannelManager.scheduleConnect(getProcessModel().getVehicleHost(),
-                                            getProcessModel().getVehiclePort(),
-                                            getProcessModel().getReconnectDelay());
-    }
-  }
-
-  @Override
-  public void onIdle() {
-    LOG.debug("{}: idle", getName());
-    getProcessModel().setVehicleIdle(true);
-    // If we are supposed to reconnect automatically, do so.
-    if (isEnabled() && getProcessModel().isDisconnectingOnVehicleIdle()) {
-      LOG.debug("{}: Disconnecting on idle timeout...", getName());
-      disconnectVehicle();
-    }
-  }
-
-  @Override
+//  @Override
   public synchronized void onIncomingTelegram(Response response) {
     requireNonNull(response, "response");
 
@@ -418,7 +343,7 @@ public class TshCommAdapter
     telegram.updateRequestContent(globalRequestCounter.getAndIncrement());
 
     LOG.debug("{}: Sending request '{}'", getName(), telegram);
-    vehicleChannelManager.send(telegram);
+//    vehicleChannelManager.send(telegram);
 
     // If the telegram is an order, remember it.
     if (telegram instanceof OrderRequest) {
@@ -531,11 +456,11 @@ public class TshCommAdapter
    *
    * @return The channel handlers responsible for writing and reading from the byte stream
    */
-  private List<ChannelHandler> getChannelHandlers() {
-    return Arrays.asList(new LengthFieldBasedFrameDecoder(getMaxTelegramLength(), 1, 1, 2, 0),
-                         new VehicleTelegramDecoder(this),
-                         new VehicleTelegramEncoder());
-  }
+//  private List<ChannelHandler> getChannelHandlers() {
+//    return Arrays.asList(new LengthFieldBasedFrameDecoder(getMaxTelegramLength(), 1, 1, 2, 0),
+//                         new VehicleTelegramDecoder(),
+//                         new VehicleTelegramEncoder());
+//  }
 
   private int getMaxTelegramLength() {
     return Ints.max(OrderResponse.TELEGRAM_LENGTH,
