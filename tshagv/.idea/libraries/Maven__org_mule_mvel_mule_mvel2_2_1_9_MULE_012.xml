@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.mule.mvel:mule-mvel2:2.1.9-MULE-012">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/mule/mvel/mule-mvel2/2.1.9-MULE-012/mule-mvel2-2.1.9-MULE-012.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/mule/mvel/mule-mvel2/2.1.9-MULE-012/mule-mvel2-2.1.9-MULE-012-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/mule/mvel/mule-mvel2/2.1.9-MULE-012/mule-mvel2-2.1.9-MULE-012-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
