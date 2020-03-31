@@ -85,7 +85,6 @@ public class TshProcessModel
   public TshProcessModel(Vehicle attachedVehicle) {
     super(attachedVehicle);
     // Initialize the state fields
-    final byte[] dummyData = new byte[StateResponse.TELEGRAM_LENGTH];
     previousState = new StateResponse();
     currentState = new StateResponse();
   }

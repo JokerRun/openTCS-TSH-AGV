@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns:spring="http://www.springframework.org/schema/beans" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+      xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd">
+    <spring:beans>
+        <spring:bean id="VehicleSimulator" name="VehicleSimulator" class="VehicleSimulator" scope="singleton"/>
+    </spring:beans>
     <sub-flow name="get:/getAgvInfo">
         <component doc:name="Java">
             <method-entry-point-resolver>
                 <include-entry-point method="onStartRequest"/>
             </method-entry-point-resolver>
-            <singleton-object class="VehicleSimulator"/>
+            <spring-object bean="VehicleSimulator"/>
         </component>
     </sub-flow>
     <sub-flow name="post:/commandOrder">
@@ -17,7 +21,7 @@
             <method-entry-point-resolver>
                 <include-entry-point method="onOrderRequest"/>
             </method-entry-point-resolver>
-            <singleton-object class="VehicleSimulator"/>
+            <spring-object bean="VehicleSimulator"/>
         </component>
     </sub-flow>
 </mule>

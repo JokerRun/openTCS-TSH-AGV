@@ -75,28 +75,28 @@ public class VehicleSimulator {
      * @author Rico
      * @date 2020/2/5 2:25 下午
      */
-    private void simulateCompleteTask(OrderRequest request) {
+    private synchronized void simulateCompleteTask(OrderRequest request) {
         int requestId = request.getId();
         int orderID = request.getOrderId();
         int destId = request.getDestinationId();
         OrderAction destAction = request.getDestinationAction();
-        if (vehicleState.getOperationMode() == VehicleState.OperatingState.IDLE) {
+        if (vehicleState.getOperatingState() == VehicleState.OperatingState.IDLE) {
             vehicleState.setCurrOrderId(orderID);
             //执行移动: 更改小车运行状态为移动中 --> 更新小车当前点位 --> 更改小车运行状态为空闲(完成移动)
             if (vehicleState.getCurrOrderId() != destId) {
-                vehicleState.setOperationMode(VehicleState.OperatingState.MOVING);
+                vehicleState.setOperatingState(VehicleState.OperatingState.MOVING);
                 vehicleState.setPositionId(destId);
             }
             if (OrderAction.NONE == destAction) {
-                vehicleState.setOperationMode(VehicleState.OperatingState.IDLE);
+                vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             } else if (OrderAction.LOAD == destAction) {
-                vehicleState.setOperationMode(VehicleState.OperatingState.ACTING);
+                vehicleState.setOperatingState(VehicleState.OperatingState.ACTING);
                 vehicleState.setLoadState(VehicleState.LoadState.FULL);
-                vehicleState.setOperationMode(VehicleState.OperatingState.IDLE);
+                vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             } else if (OrderAction.UNLOAD == destAction) {
-                vehicleState.setOperationMode(VehicleState.OperatingState.ACTING);
+                vehicleState.setOperatingState(VehicleState.OperatingState.ACTING);
                 vehicleState.setLoadState(VehicleState.LoadState.FULL);
-                vehicleState.setOperationMode(VehicleState.OperatingState.IDLE);
+                vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             }
             vehicleState.setLastFinishedOrderId(orderID);
         }

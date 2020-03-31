@@ -350,15 +350,25 @@ public class TshCommAdapter
 
         // If the telegram is an order, remember it.
         if (telegram instanceof StateRequest) {
-            String get = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
-            StateResponse parse = JSONObject.parseObject(get, StateResponse.class);
+            String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
+            StateResponse stateResponse = JSONObject.parseObject(stateResponseJson, StateResponse.class);
 
-            return parse;
+            return stateResponse;
         } else if (telegram instanceof OrderRequest) {
-            // If the telegram is an order, remember it.
+            String orderRequestJson = JSONObject.toJSONString(telegram);
+            //            String orderResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/CommandOrder");
+            String orderResponseJson = null;
+            try {
+                orderResponseJson = HttpUtil.doPost("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/commandOrder", orderRequestJson);
+                // If the telegram is an order, remember it.
+                getProcessModel().setLastOrderSent((OrderRequest) telegram);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            OrderResponse orderResponse = JSONObject.parseObject(orderResponseJson, OrderResponse.class);
 
-            getProcessModel().setLastOrderSent((OrderRequest) telegram);
-            return null;
+
+            return orderResponse;
         }
 
         if (getProcessModel().isPeriodicStateRequestEnabled()) {

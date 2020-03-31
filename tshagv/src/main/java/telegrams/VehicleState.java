@@ -3,8 +3,6 @@ package telegrams; /**
  */
 
 import com.alibaba.fastjson.JSONObject;
-import telegrams.OrderResponse;
-import telegrams.StateResponse;
 
 /**
  * Represents the state of a physical vehicle.
@@ -23,7 +21,7 @@ public class VehicleState {
    * The current operation mode of the vehicle.
    * (M)oving, (A)cting, (I)dle, (C)harging, (E)rror.
    */
-  private OperatingState operationMode = OperatingState.IDLE;
+  private OperatingState operatingState = OperatingState.IDLE;
   /**
    * The load handling state of the vehicle.
    * (E)mpty, (F)ull, (U)nknown.
@@ -32,7 +30,7 @@ public class VehicleState {
   /**
    * The id of the current position.
    */
-  private int positionId;
+  private int positionId=1;
   /**
    * The order id of the last finished order.
    */
@@ -54,12 +52,12 @@ public class VehicleState {
     this.telegramCounter = telegramCounter;
   }
 
-    public OperatingState getOperationMode() {
-        return operationMode;
+    public OperatingState getOperatingState() {
+        return operatingState;
     }
 
-    public void setOperationMode(OperatingState operationMode) {
-        this.operationMode = operationMode;
+    public void setOperatingState(OperatingState operatingState) {
+        this.operatingState = operatingState;
     }
 
     public LoadState getLoadState() {
