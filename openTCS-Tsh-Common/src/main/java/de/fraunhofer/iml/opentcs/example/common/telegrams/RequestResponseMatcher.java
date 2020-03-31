@@ -47,7 +47,7 @@ public class RequestResponseMatcher {
     requireNonNull(request, "request");
     boolean emptyQueueBeforeEnqueue = requests.isEmpty();
 
-    LOG.debug("Enqueuing request: {}", request);
+    LOG.debug("请求队列新增请求: {}， 当前待发送请求数为：{}", request,requests.size());
     requests.add(request);
 
     if (emptyQueueBeforeEnqueue) {
@@ -59,21 +59,21 @@ public class RequestResponseMatcher {
    * Checks if a telegram is enqueued and sends it.
    */
   public void checkForSendingNextRequest() {
-    LOG.debug("Check for sending next request.");
+    LOG.debug("检查是否存在待发送请求.., 当前requests数量为:{}",requests.size());
     if (peekCurrentRequest().isPresent()) {
         Response response = telegramSender.sendTelegram(peekCurrentRequest().get());
         response.setId(peekCurrentRequest().get().getId());
         telegramSender.onIncomingTelegram(response);
     }
     else {
-      LOG.debug("No requests to be sent.");
+      LOG.debug("未找到待发送请求.");
     }
   }
 
   /**
-   * Returns the next request in the queue or an {@link Optional#EMPTY} if none is present.
+   * Returns the next request in the queue or an {@link Optional# EMPTY} if none is present.
    *
-   * @return The next request in the queue or an {@link Optional#EMPTY} if none is present
+   * @return The next request in the queue or an {@link Optional# EMPTY} if none is present
    */
   public Optional<Request> peekCurrentRequest() {
     return Optional.ofNullable(requests.peek());
@@ -91,6 +91,7 @@ public class RequestResponseMatcher {
 
     Request currentRequest = requests.peek();
     if (currentRequest != null && response.isResponseTo(currentRequest)) {
+      LOG.debug("收到响应：{}, 匹配到请求：{}, 即将从请求队列({})中剔除。",response,currentRequest,requests.size());
       requests.remove();
       return true;
     }
@@ -111,6 +112,7 @@ public class RequestResponseMatcher {
    * Clears all requests stored in the queue.
    */
   public void clear() {
-    requests.clear();
+    LOG.debug("即将清空请求队列requests({})...",requests.size());
+      requests.clear();
   }
 }

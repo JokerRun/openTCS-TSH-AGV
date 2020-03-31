@@ -96,10 +96,11 @@ public class TshCommAdapter
      */
     @Override
     public void initialize() {
+        LOG.info("初始化驱动{} ", getName());
         super.initialize();
         this.requestResponseMatcher = componentsFactory.createRequestResponseMatcher(this);
         ActionListener actionListener = e -> {
-            LOG.debug("Adding new state requests to the queue.");
+            LOG.debug("小车状态周期请求任务(stateRequesterTask) 即将enqueueRequest到消息队列...");
             requestResponseMatcher.enqueueRequest(new StateRequest());
         };
         this.stateRequesterTask = componentsFactory.createStateRequesterTask(actionListener);
@@ -107,12 +108,15 @@ public class TshCommAdapter
 
     @Override
     public void terminate() {
+        LOG.info("终止用驱动{}", getName());
+
         stateRequesterTask.disable();
         super.terminate();
     }
 
     @Override
     public synchronized void enable() {
+        LOG.info("启用驱动{}", getName());
         if (isEnabled()) {
             return;
         }
@@ -126,6 +130,8 @@ public class TshCommAdapter
 
     @Override
     public synchronized void disable() {
+        LOG.info("停用驱动{}", getName());
+
         if (!isEnabled()) {
             return;
         }
@@ -135,6 +141,7 @@ public class TshCommAdapter
 
     @Override
     public synchronized void clearCommandQueue() {
+        LOG.info("{}:clearCommandQueue清空当前小车驱动的所有待执行指令。");
         super.clearCommandQueue();
         orderIds.clear();
     }
@@ -142,34 +149,29 @@ public class TshCommAdapter
     @Override
     protected synchronized void connectVehicle() {
 
-        //      if (!isEnabled()) {
-        //          return;
-        //      }
-        String vehicleHost = getProcessModel().getVehicleHost();
-        int vehiclePort = getProcessModel().getVehiclePort();
+        String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
 
-
-        LOG.debug("{}: connected", getName());
-        getProcessModel().setCommAdapterConnected(true);
-
-        // Check for resending last request
-        requestResponseMatcher.checkForSendingNextRequest();
+        if (!Objects.isNull(stateResponseJson)) {
+            LOG.info("{}: 连接成功", getName());
+            getProcessModel().setCommAdapterConnected(true);
+            // Check for resending last request
+            requestResponseMatcher.checkForSendingNextRequest();
+        }
 
 
     }
 
     @Override
     protected synchronized void disconnectVehicle() {
-        LOG.debug("{}: disconnected", getName());
         getProcessModel().setCommAdapterConnected(false);
         getProcessModel().setVehicleIdle(true);
         getProcessModel().setVehicleState(Vehicle.State.UNKNOWN);
+        LOG.info("{}: 驱动已断开连接", getName());
     }
 
     @Override
     protected synchronized boolean isVehicleConnected() {
-        return true;
-        //    return vehicleChannelManager != null && vehicleChannelManager.isConnected();
+        return getProcessModel().isCommAdapterConnected();
     }
 
     @Override
@@ -234,7 +236,7 @@ public class TshCommAdapter
     public synchronized void sendCommand(MovementCommand cmd)
             throws IllegalArgumentException {
         requireNonNull(cmd, "cmd");
-
+        LOG.debug("{}:sendCommand收到系统下发的新命令: {}, 即将加入到orderIds,并enqueueRequest");
         try {
             OrderRequest telegram = orderMapper.mapToOrder(cmd);
             orderIds.put(cmd, telegram.getOrderId());
@@ -334,16 +336,14 @@ public class TshCommAdapter
     public synchronized Response sendTelegram(Request telegram) {
         requireNonNull(telegram, "telegram");
         if (!isVehicleConnected()) {
-            LOG.debug("{}: Not connected - not sending request '{}'",
-                    getName(),
-                    telegram);
+            LOG.debug("{}: 驱动未连接小车，无法发送请求报文： '{}'", getName(), telegram);
             return null;
         }
 
         // Update the request's id
         telegram.updateRequestContent(globalRequestCounter.getAndIncrement());
 
-        LOG.debug("{}: Sending request '{}'", getName(), telegram);
+        LOG.debug("{}: 驱动即将发送请求报文: '{}'", getName(), telegram);
         //    vehicleChannelManager.send(telegram);
 
         // If the telegram is an order, remember it.
@@ -380,7 +380,7 @@ public class TshCommAdapter
     }
 
     private void onStateResponse(StateResponse stateResponse) {
-        LOG.debug("{}: Received a new state response: {}", getName(), stateResponse);
+        LOG.debug("============ {}: onStateResponse 收到新的小车状态response: {} ==================", getName(), stateResponse);
 
         // Update the vehicle's current state and remember the old one.
         getProcessModel().setPreviousState(getProcessModel().getCurrentState());
@@ -392,6 +392,7 @@ public class TshCommAdapter
         checkForVehiclePositionUpdate(previousState, currentState);
         checkForVehicleStateUpdate(previousState, currentState);
         checkOrderFinished(previousState, currentState);
+        LOG.debug("============ {}: onStateResponse 完成小车状态response处理 ==================");
 
         // XXX Process further state updates extracted from the telegram here.
     }
@@ -403,7 +404,7 @@ public class TshCommAdapter
         }
         // Map the reported position ID to a point name.
         String currentPosition = String.valueOf(currentState.getPositionId());
-        LOG.debug("{}: Vehicle is now at point {}", getName(), currentPosition);
+        LOG.debug("{}: onStateResponse.1 检查到小车位置发生变化，当前所在点位为：{}", getName(), currentPosition);
         // Update the position with the rest of the system, but only if it's not zero (unknown).
         if (currentState.getPositionId() != 0) {
             getProcessModel().setVehiclePosition(currentPosition);
@@ -411,10 +412,12 @@ public class TshCommAdapter
     }
 
     private void checkForVehicleStateUpdate(StateResponse previousState,
-                                            StateResponse currentState) {
+                                            StateResponse currentState)  {
         if (previousState.getOperatingState() == currentState.getOperatingState()) {
             return;
         }
+        LOG.debug("{}: onStateResponse.2 检查到状态发生变化，更新内核小车状态数据 ");
+
         getProcessModel().setVehicleState(translateVehicleState(currentState.getOperatingState()));
     }
 
@@ -434,18 +437,21 @@ public class TshCommAdapter
                     currentState.getLastFinishedOrderId());
             return;
         }
+        LOG.debug("{}: onStateResponse.3.1 检查到完成了一个新的指令单{} ",currentState.getLastFinishedOrderId());
 
-        Iterator<MovementCommand> cmdIter = getSentQueue().iterator();
+        //遍历所有已经被下发的指令，
+        Iterator<MovementCommand> sentCmd = getSentQueue().iterator();
         boolean finishedAll = false;
-        while (!finishedAll && cmdIter.hasNext()) {
-            MovementCommand cmd = cmdIter.next();
-            cmdIter.remove();
+        while (!finishedAll && sentCmd.hasNext()) {
+            MovementCommand cmd = sentCmd.next();
+            sentCmd.remove();
             int orderId = orderIds.remove(cmd);
             if (orderId == currentState.getLastFinishedOrderId()) {
                 finishedAll = true;
             }
 
-            LOG.debug("{}: Reporting command with order ID {} as executed: {}", getName(), orderId, cmd);
+            LOG.debug("{}: onStateResponse.3.2 告诉系统id为：{} 的指令单: {}已被完成", getName(), orderId, cmd);
+
             getProcessModel().commandExecuted(cmd);
         }
     }
