@@ -100,7 +100,7 @@ public class TshCommAdapter
         super.initialize();
         this.requestResponseMatcher = componentsFactory.createRequestResponseMatcher(this);
         ActionListener actionListener = e -> {
-            LOG.debug("小车状态周期请求任务(stateRequesterTask) 即将enqueueRequest到消息队列...");
+            LOG.debug(">>>>>>>>>>>>>>>>> 小车状态周期请求任务(stateRequesterTask) 即将enqueueRequest到消息队列...");
             requestResponseMatcher.enqueueRequest(new StateRequest());
         };
         this.stateRequesterTask = componentsFactory.createStateRequesterTask(actionListener);
@@ -412,7 +412,7 @@ public class TshCommAdapter
     }
 
     private void checkForVehicleStateUpdate(StateResponse previousState,
-                                            StateResponse currentState)  {
+                                            StateResponse currentState) {
         if (previousState.getOperatingState() == currentState.getOperatingState()) {
             return;
         }
@@ -432,12 +432,10 @@ public class TshCommAdapter
         // Check if the new finished order ID is in the queue of sent orders.
         // If yes, report all orders up to that one as finished.
         if (!orderIds.containsValue(currentState.getLastFinishedOrderId())) {
-            LOG.debug("{}: Ignored finished order ID {} (reported by vehicle, not found in sent queue).",
-                    getName(),
-                    currentState.getLastFinishedOrderId());
+            LOG.debug("{}: Ignored finished order ID {} (reported by vehicle, not found in sent queue).", getName(), currentState.getLastFinishedOrderId());
             return;
         }
-        LOG.debug("{}: onStateResponse.3.1 检查到完成了一个新的指令单{} ",currentState.getLastFinishedOrderId());
+        LOG.debug(" onStateResponse.3.1 检查到完成了一个新的指令单{} ", currentState.getLastFinishedOrderId());
 
         //遍历所有已经被下发的指令，
         Iterator<MovementCommand> sentCmd = getSentQueue().iterator();
@@ -450,7 +448,7 @@ public class TshCommAdapter
                 finishedAll = true;
             }
 
-            LOG.debug("{}: onStateResponse.3.2 告诉系统id为：{} 的指令单: {}已被完成", getName(), orderId, cmd);
+            LOG.debug("{}: onStateResponse.3.2 告诉系统id为：{} 的指令单已被完成", getName(), orderId);
 
             getProcessModel().commandExecuted(cmd);
         }
