@@ -8,6 +8,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
         <spring:bean id="VehicleSimulator" name="VehicleSimulator" class="VehicleSimulator" scope="singleton"/>
     </spring:beans>
     <sub-flow name="get:/getAgvInfo">
+        <logger message="==========&#25910;&#21040;&#35831;&#27714;=========" level="INFO" category="[[[getAgvInfo]]]" doc:name="Logger"/>
         <component doc:name="Java">
             <method-entry-point-resolver>
                 <include-entry-point method="onStartRequest"/>
@@ -17,6 +18,7 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
     </sub-flow>
     <sub-flow name="post:/commandOrder">
         <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+        <logger message="==========&#25910;&#21040;&#35831;&#27714;=========#[payload]" level="INFO" category="[[[commandOrder]]]" doc:name="Logger"/>
         <component doc:name="Java">
             <method-entry-point-resolver>
                 <include-entry-point method="onOrderRequest"/>

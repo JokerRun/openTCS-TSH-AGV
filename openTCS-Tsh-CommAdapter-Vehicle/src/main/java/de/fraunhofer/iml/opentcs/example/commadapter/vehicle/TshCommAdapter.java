@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -82,7 +83,7 @@ public class TshCommAdapter
     public TshCommAdapter(@Assisted Vehicle vehicle,
                           OrderMapper orderMapper,
                           TshAdapterComponentsFactory componentsFactory) {
-        super(new TshProcessModel(vehicle), 3, 2, LoadAction.CHARGE);
+        super(new TshProcessModel(vehicle), 1, 3, LoadAction.CHARGE);
         this.orderMapper = requireNonNull(orderMapper, "orderMapper");
         this.componentsFactory = requireNonNull(componentsFactory, "componentsFactory");
     }
@@ -97,10 +98,11 @@ public class TshCommAdapter
     public void initialize() {
         super.initialize();
         this.requestResponseMatcher = componentsFactory.createRequestResponseMatcher(this);
-        this.stateRequesterTask = componentsFactory.createStateRequesterTask(e -> {
+        ActionListener actionListener = e -> {
             LOG.debug("Adding new state requests to the queue.");
             requestResponseMatcher.enqueueRequest(new StateRequest());
-        });
+        };
+        this.stateRequesterTask = componentsFactory.createStateRequesterTask(actionListener);
     }
 
     @Override
@@ -236,11 +238,7 @@ public class TshCommAdapter
         try {
             OrderRequest telegram = orderMapper.mapToOrder(cmd);
             orderIds.put(cmd, telegram.getOrderId());
-            LOG.debug("{}: Enqueuing order telegram with ID {}: {}, {}",
-                    getName(),
-                    telegram.getOrderId(),
-                    telegram.getDestinationId(),
-                    telegram.getDestinationAction());
+            LOG.debug("{}: Enqueuing order telegram with ID {}: {}, {}", getName(), telegram.getOrderId(), telegram.getDestinationId(), telegram.getDestinationAction());
 
             // Add the telegram to the queue. Telegram will be send later when its the first telegram in
             // the queue. This ensures that we always wait for a response until we send a new request.

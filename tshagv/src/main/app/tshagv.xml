@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
+<mule xmlns:spring="http://www.springframework.org/schema/beans" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit"
       xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
       xmlns:http="http://www.mulesoft.org/schema/mule/http"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd">
-    <http:listener-config name="tshagv-httpListenerConfig" host="0.0.0.0" port="4002" doc:name="HTTP Listener Configuration" />
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd">
+    <http:listener-config name="tshagv-httpListenerConfig" host="0.0.0.0" port="${port}" doc:name="HTTP Listener Configuration" />
     <apikit:config name="tshagv-config" raml="tshagv.raml" consoleEnabled="false" doc:name="Router" />
     <flow name="tshagv-main">
         <http:listener config-ref="tshagv-httpListenerConfig" path="/api/*" doc:name="HTTP" />
@@ -17,11 +18,9 @@ http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/a
         <apikit:console config-ref="tshagv-config" doc:name="APIkit Console" />
     </flow>
     <flow name="get:/getAgvInfo:tshagv-config">
-        <logger level="INFO" doc:name="Logger" />
         <flow-ref name="get:/getAgvInfo" doc:name="Flow Reference" />
     </flow>
     <flow name="post:/commandOrder:tshagv-config">
-        <logger level="INFO" doc:name="Logger" />
         <flow-ref name="post:/commandOrder" doc:name="Flow Reference" />
     </flow>
     <apikit:mapping-exception-strategy name="tshagv-apiKitGlobalExceptionMapping">
