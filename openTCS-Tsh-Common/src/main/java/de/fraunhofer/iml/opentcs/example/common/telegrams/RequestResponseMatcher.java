@@ -61,7 +61,9 @@ public class RequestResponseMatcher {
   public void checkForSendingNextRequest() {
     LOG.debug("Check for sending next request.");
     if (peekCurrentRequest().isPresent()) {
-      telegramSender.sendTelegram(peekCurrentRequest().get());
+        Response response = telegramSender.sendTelegram(peekCurrentRequest().get());
+        response.setId(peekCurrentRequest().get().getId());
+        telegramSender.onIncomingTelegram(response);
     }
     else {
       LOG.debug("No requests to be sent.");

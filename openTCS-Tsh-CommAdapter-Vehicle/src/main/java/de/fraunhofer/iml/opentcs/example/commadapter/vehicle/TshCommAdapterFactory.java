@@ -5,8 +5,8 @@ package de.fraunhofer.iml.opentcs.example.commadapter.vehicle;
 
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.exchange.TshCommAdapterDescription;
 import de.fraunhofer.iml.opentcs.example.common.VehicleProperties;
-import static de.fraunhofer.iml.opentcs.example.common.VehicleProperties.PROPKEY_VEHICLE_HOST;
-import static de.fraunhofer.iml.opentcs.example.common.VehicleProperties.PROPKEY_VEHICLE_PORT;
+
+import static de.fraunhofer.iml.opentcs.example.common.VehicleProperties.*;
 import static java.util.Objects.requireNonNull;
 import javax.inject.Inject;
 import org.opentcs.data.model.Vehicle;
@@ -110,9 +110,8 @@ public class TshCommAdapterFactory
 
     TshCommAdapter adapter = componentsFactory.createTshCommAdapter(vehicle);
     adapter.getProcessModel().setVehicleHost(vehicle.getProperty(PROPKEY_VEHICLE_HOST));
-    adapter.getProcessModel().setVehiclePort(
-        Integer.parseInt(vehicle.getProperty(PROPKEY_VEHICLE_PORT))
-    );
+    adapter.getProcessModel().setVehiclePort(Integer.parseInt(vehicle.getProperty(PROPKEY_VEHICLE_PORT)));
+    adapter.getProcessModel().setStateRequestInterval(Integer.parseInt(vehicle.getProperty(PROPKEY_STATE_REQUEST_INTERVAL)));
     return adapter;
   }
 }

@@ -17,4 +17,5 @@ public interface VehicleProperties {
    * The key of the vehicle property containing the vehicle's TCP port.
    */
   String PROPKEY_VEHICLE_PORT = "example:vehiclePort";
+  String PROPKEY_STATE_REQUEST_INTERVAL = "example:stateRequestInterval";
 }

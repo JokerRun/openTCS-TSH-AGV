@@ -6,9 +6,7 @@ package de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams;
 import static com.google.common.base.Ascii.ETX;
 import static com.google.common.base.Ascii.STX;
 import static com.google.common.base.Preconditions.checkArgument;
-import com.google.common.primitives.Ints;
 import de.fraunhofer.iml.opentcs.example.common.telegrams.Response;
-import static de.fraunhofer.iml.opentcs.example.common.telegrams.Telegram.getCheckSum;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -40,19 +38,6 @@ public class OrderResponse
    */
   private int orderId;
 
-  /**
-   * Creates a new instance.
-   *
-   * @param telegramData This telegram's raw content.
-   */
-  public OrderResponse(byte[] telegramData) {
-    super(TELEGRAM_LENGTH);
-    requireNonNull(telegramData, "telegramData");
-    checkArgument(telegramData.length == TELEGRAM_LENGTH);
-
-    System.arraycopy(telegramData, 0, rawContent, 0, TELEGRAM_LENGTH);
-    decodeTelegramContent();
-  }
 
   /**
    * Returns the order id received by the vehicle.
@@ -68,39 +53,5 @@ public class OrderResponse
     return "OrderResponse{" + "id=" + id + '}';
   }
 
-  /**
-   * Checks if the given byte array is an order reponse telegram.
-   *
-   * @param telegramData The telegram data to check.
-   * @return {@code true} if, and only if, the given data is an order response telegram.
-   */
-  public static boolean isOrderResponse(byte[] telegramData) {
-    requireNonNull(telegramData, "telegramData");
 
-    boolean result = true;
-    if (telegramData.length != TELEGRAM_LENGTH) {
-      result = false;
-    }
-    else if (telegramData[0] != STX) {
-      result = false;
-    }
-    else if (telegramData[TELEGRAM_LENGTH - 1] != ETX) {
-      result = false;
-    }
-    else if (telegramData[1] != PAYLOAD_LENGTH) {
-      result = false;
-    }
-    else if (telegramData[2] != TYPE) {
-      result = false;
-    }
-    else if (getCheckSum(telegramData) != telegramData[CHECKSUM_POS]) {
-      result = false;
-    }
-    return result;
-  }
-
-  private void decodeTelegramContent() {
-    this.id = Ints.fromBytes((byte) 0, (byte) 0, rawContent[3], rawContent[4]);
-    orderId = Ints.fromBytes((byte) 0, (byte) 0, rawContent[5], rawContent[6]);
-  }
 }

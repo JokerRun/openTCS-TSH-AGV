@@ -15,5 +15,12 @@ public interface TelegramSender {
    *
    * @param request The {@link Request} to be sent.
    */
-  void sendTelegram(Request request);
+  Response sendTelegram(Request request);
+
+  /**
+   *响应报文处理。
+   * @author Rico
+   * @date 2020/3/30 11:42 下午
+   */
+  void onIncomingTelegram(Response response);
 }

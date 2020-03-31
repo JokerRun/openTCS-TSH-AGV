@@ -12,14 +12,6 @@ package de.fraunhofer.iml.opentcs.example.common.telegrams;
 public abstract class Request
     extends Telegram {
 
-  /**
-   * Creates a new instance.
-   *
-   * @param telegramLength The request's length.
-   */
-  public Request(int telegramLength) {
-    super(telegramLength);
-  }
 
   /**
    * Updates the content of the request to include the given id.

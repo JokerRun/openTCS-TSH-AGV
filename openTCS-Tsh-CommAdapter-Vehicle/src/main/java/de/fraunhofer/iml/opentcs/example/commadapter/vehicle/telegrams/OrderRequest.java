@@ -46,6 +46,7 @@ public class OrderRequest
    */
   private final OrderAction destinationAction;
 
+
   /**
    * Creates a new instance.
    *
@@ -58,13 +59,11 @@ public class OrderRequest
                       int orderId,
                       int destinationId,
                       OrderAction destinationAction) {
-    super(TELEGRAM_LENGTH);
+    super();
     this.id = telegramId;
     this.orderId = orderId;
     this.destinationId = destinationId;
     this.destinationAction = requireNonNull(destinationAction, "destinationAction");
-
-    encodeTelegramContent(orderId, destinationId, destinationAction);
   }
 
   /**
@@ -104,42 +103,5 @@ public class OrderRequest
   @Override
   public void updateRequestContent(int telegramId) {
     id = telegramId;
-    encodeTelegramContent(orderId, destinationId, destinationAction);
-  }
-
-  /**
-   * Encodes this telegram's content into the raw content byte array.
-   *
-   * @param orderId The order id
-   * @param destinationId The destination name
-   * @param destinationAction The destination action
-   */
-  private void encodeTelegramContent(int orderId,
-                                     int destinationId,
-                                     OrderAction destinationAction) {
-    // Start of each telegram
-    rawContent[0] = STX;
-    rawContent[1] = PAYLOAD_LENGTH;
-
-    // Payload of the telegram
-    rawContent[2] = TYPE;
-
-    byte[] tmpWord = Ints.toByteArray(id);
-    rawContent[3] = tmpWord[2];
-    rawContent[4] = tmpWord[3];
-
-    tmpWord = Ints.toByteArray(orderId);
-    rawContent[5] = tmpWord[2];
-    rawContent[6] = tmpWord[3];
-
-    tmpWord = Ints.toByteArray(destinationId);
-    rawContent[7] = tmpWord[2];
-    rawContent[8] = tmpWord[3];
-
-    rawContent[9] = destinationAction.getActionByte();
-
-    // End of each telegram
-    rawContent[CHECKSUM_POS] = getCheckSum(rawContent);
-    rawContent[TELEGRAM_LENGTH - 1] = ETX;
   }
 }

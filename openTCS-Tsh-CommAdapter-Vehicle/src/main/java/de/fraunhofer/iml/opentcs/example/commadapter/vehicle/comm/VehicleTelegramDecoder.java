@@ -45,18 +45,18 @@ public class VehicleTelegramDecoder {
     }
 
     //  @Override
-    protected void decode(String responJson) {
+    protected void decode(Response response) {
         // Don't do anything if we don't have enough bytes.
         LOG.debug("Checking if it's an order response...");
-        if (OrderResponse.isOrderResponse(responJson.getBytes())) {
-            responseHandler.onIncomingTelegram(new OrderResponse(responJson.getBytes()));
+        if (response instanceof OrderResponse) {
+            responseHandler.onIncomingTelegram(response);
             return;
-        } else if (StateResponse.isStateResponse(responJson.getBytes())) {
+        } else if (response instanceof StateResponse) {
             LOG.debug("Checking if it's a state response...");
-            responseHandler.onIncomingTelegram(new StateResponse(responJson.getBytes()));
+            responseHandler.onIncomingTelegram(response);
         } else {
             // Don't reset reader index and discard bytes
-            LOG.warn("Not a valid telegram: {}", responJson);
+            LOG.warn("Not a valid telegram: {}", response);
         }
 
     }

@@ -19,31 +19,9 @@ public abstract class Telegram
    */
   public static final int ID_DEFAULT = 0;
   /**
-   * The telegram's raw content as sent via the network.
-   */
-  protected final byte[] rawContent;
-  /**
    * The identifier for a specific telegram instance.
    */
   protected int id;
-
-  /**
-   * Creates a new instance.
-   *
-   * @param telegramLength The telegram's length
-   */
-  public Telegram(int telegramLength) {
-    this.rawContent = new byte[telegramLength];
-  }
-
-  /**
-   * Returns this telegram's actual raw content.
-   *
-   * @return This telegram's actual raw content.
-   */
-  public byte[] getRawContent() {
-    return rawContent;
-  }
 
   /**
    * Returns the identifier for this specific telegram instance.
@@ -54,21 +32,7 @@ public abstract class Telegram
     return id;
   }
 
-  // tag::documentation_checksumComp[]
-  /**
-   * Computes a checksum for the given raw content of a telegram.
-   *
-   * @param rawContent A telegram's raw content.
-   * @return The checksum computed for the given raw content.
-   */
-  public static byte getCheckSum(byte[] rawContent) {
-    requireNonNull(rawContent, "rawContent");
-
-    int cs = 0;
-    for (int i = 0; i < rawContent[1]; i++) {
-      cs ^= rawContent[2 + i];
+    public void setId(int id) {
+        this.id = id;
     }
-    return (byte) cs;
-  }
-  // end::documentation_checksumComp[]
 }

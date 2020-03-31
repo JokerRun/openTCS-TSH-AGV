@@ -13,17 +13,9 @@ import javax.annotation.Nonnull;
  */
 public abstract class Response
     extends Telegram {
-  
-  /**
-   * Creates a new instance.
-   *
-   * @param telegramLength The response's length.
-   */
-  public Response(int telegramLength) {
-    super(telegramLength);
-  }
 
-  /**
+
+    /**
    * Checks whether this is a response to the given request.
    * <p>
    * This implementation only checks for matching telegram ids.
@@ -37,4 +29,5 @@ public abstract class Response
     requireNonNull(request, "request");
     return request.getId() == getId();
   }
+
 }

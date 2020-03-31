@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<transportOrders>
+    <transportOrder deadline="PLUS_ONE_HOUR" intendedVehicle="Vehicle-shangliao">
+        <driveOrder locationName="qitaogongwei1" vehicleOperation="Load cargo"/>
+        <driveOrder locationName="rukuwei" vehicleOperation="Unload cargo"/>
+    </transportOrder>
+    <transportOrder deadline="PLUS_ONE_HOUR" intendedVehicle="Vehicle-shangliao">
+        <driveOrder locationName="qitaogongwei2" vehicleOperation="Load cargo"/>
+        <driveOrder locationName="rukuwei" vehicleOperation="Unload cargo"/>
+    </transportOrder>
+    <transportOrder deadline="PLUS_ONE_HOUR" intendedVehicle="Vehicle-xialiao">
+        <driveOrder locationName="chengpinjiebo" vehicleOperation="Load cargo"/>
+        <driveOrder locationName="chengpinxieliao" vehicleOperation="Unload cargo"/>
+    </transportOrder>
+    <transportOrder deadline="PLUS_ONE_HOUR" intendedVehicle="Vehicle-xialiao">
+        <driveOrder locationName="kongpanjiebo" vehicleOperation="Load cargo"/>
+        <driveOrder locationName="kongpanxieliao" vehicleOperation="Unload cargo"/>
+    </transportOrder>
+</transportOrders>

@@ -19,22 +19,6 @@ public class StateResponse
     extends Response {
 
   /**
-   * The response type.
-   */
-  public static final byte TYPE = 1;
-  /**
-   * The expected length of a telegram of this type.
-   */
-  public static final int TELEGRAM_LENGTH = 17;
-  /**
-   * The size of the payload (the raw content, without STX, SIZE, CHECKSUM and ETX).
-   */
-  public static final int PAYLOAD_LENGTH = TELEGRAM_LENGTH - 4;
-  /**
-   * The position of the checksum byte.
-   */
-  public static final int CHECKSUM_POS = TELEGRAM_LENGTH - 2;
-  /**
    * The id of the point at the vehicle's current position.
    */
   private int positionId;
@@ -58,20 +42,6 @@ public class StateResponse
    * The id of the last finished order.
    */
   private int lastFinishedOrderId;
-
-  /**
-   * Creates a new instance.
-   *
-   * @param telegramData This telegram's raw content.
-   */
-  public StateResponse(byte[] telegramData) {
-    super(TELEGRAM_LENGTH);
-    requireNonNull(telegramData, "telegramData");
-    checkArgument(telegramData.length == TELEGRAM_LENGTH);
-
-    System.arraycopy(telegramData, 0, rawContent, 0, TELEGRAM_LENGTH);
-    decodeTelegramContent();
-  }
 
   /**
    * Returns the id of the point at the vehicle's current position.
@@ -126,89 +96,34 @@ public class StateResponse
   public int getLastFinishedOrderId() {
     return lastFinishedOrderId;
   }
-
-  /**
-   * Returns the telegram's checksum byte.
-   *
-   * @return The telegram's checksum byte.
-   */
-  public byte getCheckSum() {
-    return rawContent[CHECKSUM_POS];
-  }
-  
   @Override
   public String toString() {
     return "StateResponse{" + "id=" + id + '}';
   }
 
-  /**
-   * Checks if the given byte array is a state reponse telegram.
-   *
-   * @param telegramData The telegram data to check.
-   * @return {@code true} if, and only if, the given data is a state response telegram.
-   */
-  public static boolean isStateResponse(byte[] telegramData) {
-    requireNonNull(telegramData, "data");
+    public void setPositionId(int positionId) {
+        this.positionId = positionId;
+    }
 
-    boolean result = true;
-    if (telegramData.length != TELEGRAM_LENGTH) {
-      result = false;
+    public void setOperatingState(OperatingState operatingState) {
+        this.operatingState = operatingState;
     }
-    else if (telegramData[0] != STX) {
-      result = false;
-    }
-    else if (telegramData[TELEGRAM_LENGTH - 1] != ETX) {
-      result = false;
-    }
-    else if (telegramData[1] != PAYLOAD_LENGTH) {
-      result = false;
-    }
-    else if (telegramData[2] != TYPE) {
-      result = false;
-    }
-    else if (getCheckSum(telegramData) != telegramData[CHECKSUM_POS]) {
-      result = false;
-    }
-    return result;
-  }
 
-  private void decodeTelegramContent() {
-    id = Ints.fromBytes((byte) 0, (byte) 0, rawContent[3], rawContent[4]);
-    positionId = Ints.fromBytes((byte) 0, (byte) 0, rawContent[5], rawContent[6]);
-    operatingState = decodeOperatingState((char) rawContent[7]);
-    loadState = decodeLoadState((char) rawContent[8]);
-    lastReceivedOrderId = Ints.fromBytes((byte) 0, (byte) 0, rawContent[9], rawContent[10]);
-    currentOrderId = Ints.fromBytes((byte) 0, (byte) 0, rawContent[11], rawContent[12]);
-    lastFinishedOrderId = Ints.fromBytes((byte) 0, (byte) 0, rawContent[13], rawContent[14]);
-  }
-
-  private OperatingState decodeOperatingState(char operatingStateRaw) {
-    switch (operatingStateRaw) {
-      case 'A':
-        return OperatingState.ACTING;
-      case 'I':
-        return OperatingState.IDLE;
-      case 'M':
-        return OperatingState.MOVING;
-      case 'E':
-        return OperatingState.ERROR;
-      case 'C':
-        return OperatingState.CHARGING;
-      default:
-        return OperatingState.UNKNOWN;
+    public void setLoadState(LoadState loadState) {
+        this.loadState = loadState;
     }
-  }
 
-  private LoadState decodeLoadState(char loadStateRaw) {
-    switch (loadStateRaw) {
-      case 'E':
-        return LoadState.EMPTY;
-      case 'F':
-        return LoadState.FULL;
-      default:
-        return LoadState.UNKNOWN;
+    public void setLastReceivedOrderId(int lastReceivedOrderId) {
+        this.lastReceivedOrderId = lastReceivedOrderId;
     }
-  }
+
+    public void setCurrentOrderId(int currentOrderId) {
+        this.currentOrderId = currentOrderId;
+    }
+
+    public void setLastFinishedOrderId(int lastFinishedOrderId) {
+        this.lastFinishedOrderId = lastFinishedOrderId;
+    }
 
   /**
    * The load handling state of a vehicle.
