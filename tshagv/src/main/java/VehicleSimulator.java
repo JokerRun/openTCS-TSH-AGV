@@ -34,8 +34,13 @@ public class VehicleSimulator {
         return orderResponse;
     }
 
-
-
+    public String setAgvInfo(String requestJson){
+        VehicleState orderRequest = JSONObject.parseObject(requestJson, VehicleState.class);
+        this.vehicleState.setEnergyLevel(orderRequest.getEnergyLevel());
+        
+        return this.vehicleState.toStateResponse();
+    }
+    
 
 
 
@@ -82,22 +87,29 @@ public class VehicleSimulator {
         OrderAction destAction = request.getDestinationAction();
         if (vehicleState.getOperatingState() == VehicleState.OperatingState.IDLE) {
             vehicleState.setCurrOrderId(orderID);
-            //执行移动: 更改小车运行状态为移动中 --> 更新小车当前点位 --> 更改小车运行状态为空闲(完成移动)
-            if (vehicleState.getCurrOrderId() != destId) {
+            //执行移动: 更改小车运行状态为移动中 --> 更新小车当前点位
+            if (vehicleState.getPositionId() != destId) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.MOVING);
+                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel()-1);
                 vehicleState.setPositionId(destId);
             }
+            //执行装卸动作:
             if (OrderAction.NONE == destAction) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             } else if (OrderAction.LOAD == destAction) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.ACTING);
+                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel()-1);
                 vehicleState.setLoadState(VehicleState.LoadState.FULL);
                 vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             } else if (OrderAction.UNLOAD == destAction) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.ACTING);
+                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel()-1);
                 vehicleState.setLoadState(VehicleState.LoadState.FULL);
                 vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
+            }else if (OrderAction.CHARGE == destAction) {
+
             }
+                vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             vehicleState.setLastFinishedOrderId(orderID);
         }
 

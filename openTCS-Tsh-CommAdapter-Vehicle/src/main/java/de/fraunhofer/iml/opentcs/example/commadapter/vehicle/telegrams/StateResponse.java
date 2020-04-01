@@ -43,6 +43,8 @@ public class StateResponse
    */
   private int lastFinishedOrderId;
 
+  private int energyLevel;
+
   /**
    * Returns the id of the point at the vehicle's current position.
    *
@@ -125,7 +127,15 @@ public class StateResponse
         this.lastFinishedOrderId = lastFinishedOrderId;
     }
 
-  /**
+    public int getEnergyLevel() {
+        return energyLevel;
+    }
+
+    public void setEnergyLevel(int energyLevel) {
+        this.energyLevel = energyLevel;
+    }
+
+    /**
    * The load handling state of a vehicle.
    */
   public static enum LoadState {

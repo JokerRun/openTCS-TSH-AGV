@@ -12,45 +12,47 @@ import com.alibaba.fastjson.JSONObject;
  */
 public class VehicleState {
 
-  /**
-   * The telegram counter to match request and response.
-   */
-  private int telegramCounter;
+    /**
+     * The telegram counter to match request and response.
+     */
+    private int telegramCounter;
 
-  /**
-   * The current operation mode of the vehicle.
-   * (M)oving, (A)cting, (I)dle, (C)harging, (E)rror.
-   */
-  private OperatingState operatingState = OperatingState.IDLE;
-  /**
-   * The load handling state of the vehicle.
-   * (E)mpty, (F)ull, (U)nknown.
-   */
-  private LoadState loadState = LoadState.EMPTY;
-  /**
-   * The id of the current position.
-   */
-  private int positionId=1;
-  /**
-   * The order id of the last finished order.
-   */
-  private int lastFinishedOrderId;
-  /**
-   * The order id of the currently executed order.
-   */
-  private int currOrderId;
-  /**
-   * The order id of the last received oder.
-   */
-  private int lastReceivedOrderId;
+    /**
+     * The current operation mode of the vehicle.
+     * (M)oving, (A)cting, (I)dle, (C)harging, (E)rror.
+     */
+    private OperatingState operatingState = OperatingState.IDLE;
+    /**
+     * The load handling state of the vehicle.
+     * (E)mpty, (F)ull, (U)nknown.
+     */
+    private LoadState loadState = LoadState.EMPTY;
+    /**
+     * The id of the current position.
+     */
+    private int positionId = 1;
+    /**
+     * The order id of the last finished order.
+     */
+    private int lastFinishedOrderId;
+    /**
+     * The order id of the currently executed order.
+     */
+    private int currOrderId;
+    /**
+     * The order id of the last received oder.
+     */
+    private int lastReceivedOrderId;
 
-  public int getTelegramCounter() {
-    return telegramCounter;
-  }
+    private int energyLevel=100;
 
-  public void setTelegramCounter(int telegramCounter) {
-    this.telegramCounter = telegramCounter;
-  }
+    public int getTelegramCounter() {
+        return telegramCounter;
+    }
+
+    public void setTelegramCounter(int telegramCounter) {
+        this.telegramCounter = telegramCounter;
+    }
 
     public OperatingState getOperatingState() {
         return operatingState;
@@ -69,68 +71,74 @@ public class VehicleState {
     }
 
     public int getPositionId() {
-    return positionId;
-  }
+        return positionId;
+    }
 
-  public void setPositionId(int positionId) {
-    this.positionId = positionId;
-  }
+    public void setPositionId(int positionId) {
+        this.positionId = positionId;
+    }
 
-  public int getLastFinishedOrderId() {
-    return lastFinishedOrderId;
-  }
+    public int getLastFinishedOrderId() {
+        return lastFinishedOrderId;
+    }
 
-  public void setLastFinishedOrderId(int lastFinishedOrderId) {
-    this.lastFinishedOrderId = lastFinishedOrderId;
-  }
+    public void setLastFinishedOrderId(int lastFinishedOrderId) {
+        this.lastFinishedOrderId = lastFinishedOrderId;
+    }
 
-  public int getCurrOrderId() {
-    return currOrderId;
-  }
+    public int getCurrOrderId() {
+        return currOrderId;
+    }
 
-  public void setCurrOrderId(int currOrderId) {
-    this.currOrderId = currOrderId;
-  }
+    public void setCurrOrderId(int currOrderId) {
+        this.currOrderId = currOrderId;
+    }
 
-  public int getLastReceivedOrderId() {
-    return lastReceivedOrderId;
-  }
+    public int getLastReceivedOrderId() {
+        return lastReceivedOrderId;
+    }
 
-  public void setLastReceivedOrderId(int lastReceivedOrderId) {
-    this.lastReceivedOrderId = lastReceivedOrderId;
-  }
+    public void setLastReceivedOrderId(int lastReceivedOrderId) {
+        this.lastReceivedOrderId = lastReceivedOrderId;
+    }
 
-  /**
-   * Creates a state response for the current vehicle state
-   *
-   * @return A state response
-   */
-  public String toStateResponse() {
+    public int getEnergyLevel() {
+        return energyLevel;
+    }
 
-      String jsonString = JSONObject.toJSONString(this);
-      return jsonString;
-  }
+    public void setEnergyLevel(int energyLevel) {
+        this.energyLevel = energyLevel;
+    }
 
-  /**
-   * Creates an order response for the current vehicle state.
-   *
-   * @return The order response
-   */
-  public String toOrderResponse() {
+    /**
+     * Creates a state response for the current vehicle state
+     *
+     * @return A state response
+     */
+    public String toStateResponse() {
 
-      OrderResponse orderResponse = new OrderResponse();
-      orderResponse.setOrderId(lastReceivedOrderId);
-      String jsonString = JSONObject.toJSONString(orderResponse);
-      return jsonString;
-  }
+        String jsonString = JSONObject.toJSONString(this);
+        return jsonString;
+    }
 
+    /**
+     * Creates an order response for the current vehicle state.
+     *
+     * @return The order response
+     */
+    public String toOrderResponse() {
 
+        OrderResponse orderResponse = new OrderResponse();
+        orderResponse.setOrderId(lastReceivedOrderId);
+        String jsonString = JSONObject.toJSONString(orderResponse);
+        return jsonString;
+    }
 
 
     /**
      * The load handling state of a vehicle.
      */
-    public static enum LoadState {
+    public enum LoadState {
         /**
          * The vehicle's load handling state is currently empty.
          */

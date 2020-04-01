@@ -26,4 +26,13 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
             <spring-object bean="VehicleSimulator"/>
         </component>
     </sub-flow>
+    <sub-flow name="post:/setAvgInfo">
+        <byte-array-to-string-transformer doc:name="Byte Array to String"/>
+        <component doc:name="Java">
+            <method-entry-point-resolver>
+                <include-entry-point method="setAgvInfo"/>
+            </method-entry-point-resolver>
+            <spring-object bean="VehicleSimulator"/>
+        </component>
+    </sub-flow>
 </mule>

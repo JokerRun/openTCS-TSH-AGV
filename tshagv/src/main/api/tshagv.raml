@@ -21,3 +21,23 @@ mediaType: application/json
       '200':
         body:
           application/json:
+/setAvgInfo:
+  post:
+    body:
+      application/json:
+        example: |
+          {
+            "currOrderId": 0,
+            "energyLevel": 100,
+            "lastFinishedOrderId": 0,
+            "lastReceivedOrderId": 0,
+            "loadState": "EMPTY",
+            "operatingState": "IDLE",
+            "positionId": 1,
+            "telegramCounter": 0
+          }
+
+    responses:
+      '200':
+        body:
+          application/json:

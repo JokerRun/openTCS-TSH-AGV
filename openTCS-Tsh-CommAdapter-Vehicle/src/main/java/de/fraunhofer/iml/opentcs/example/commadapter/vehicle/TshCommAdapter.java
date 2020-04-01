@@ -17,6 +17,7 @@ import de.fraunhofer.iml.opentcs.example.common.telegrams.*;
 import org.opentcs.data.model.Vehicle;
 import org.opentcs.data.order.DriveOrder;
 import org.opentcs.drivers.vehicle.BasicVehicleCommAdapter;
+import org.opentcs.drivers.vehicle.LoadHandlingDevice;
 import org.opentcs.drivers.vehicle.MovementCommand;
 import org.opentcs.drivers.vehicle.VehicleProcessModel;
 import org.opentcs.drivers.vehicle.management.VehicleProcessModelTO;
@@ -236,7 +237,7 @@ public class TshCommAdapter
     public synchronized void sendCommand(MovementCommand cmd)
             throws IllegalArgumentException {
         requireNonNull(cmd, "cmd");
-        LOG.debug("{}:sendCommand收到系统下发的新命令: {}, 即将加入到orderIds,并enqueueRequest");
+        LOG.debug("{}:sendCommand收到系统下发的新命令: {}, 即将加入到orderIds,并enqueueRequest", getName(), cmd.getStep());
         try {
             OrderRequest telegram = orderMapper.mapToOrder(cmd);
             orderIds.put(cmd, telegram.getOrderId());
@@ -345,34 +346,32 @@ public class TshCommAdapter
 
         LOG.debug("{}: 驱动即将发送请求报文: '{}'", getName(), telegram);
         //    vehicleChannelManager.send(telegram);
-
+        Response response = null;
         // If the telegram is an order, remember it.
         if (telegram instanceof StateRequest) {
             String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
-            StateResponse stateResponse = JSONObject.parseObject(stateResponseJson, StateResponse.class);
+            response = JSONObject.parseObject(stateResponseJson, StateResponse.class);
 
-            return stateResponse;
         } else if (telegram instanceof OrderRequest) {
-            String orderRequestJson = JSONObject.toJSONString(telegram);
+            String orderRequestJson = JSONObject.toJSONString(telegram, true);
             //            String orderResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/CommandOrder");
             String orderResponseJson = null;
             try {
+                LOG.info("*********************** {}驱动: 即将发送指令： *************\n" +
+                        " {} \n *************************",getName(), orderRequestJson);
                 orderResponseJson = HttpUtil.doPost("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/commandOrder", orderRequestJson);
                 // If the telegram is an order, remember it.
                 getProcessModel().setLastOrderSent((OrderRequest) telegram);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            OrderResponse orderResponse = JSONObject.parseObject(orderResponseJson, OrderResponse.class);
-
-
-            return orderResponse;
+            response = JSONObject.parseObject(orderResponseJson, OrderResponse.class);
         }
 
         if (getProcessModel().isPeriodicStateRequestEnabled()) {
             stateRequesterTask.restart();
         }
-        return null;
+        return response;
     }
 
     public RequestResponseMatcher getRequestResponseMatcher() {
@@ -397,6 +396,7 @@ public class TshCommAdapter
         // XXX Process further state updates extracted from the telegram here.
     }
 
+
     private void checkForVehiclePositionUpdate(StateResponse previousState,
                                                StateResponse currentState) {
         if (previousState.getPositionId() == currentState.getPositionId()) {
@@ -413,12 +413,16 @@ public class TshCommAdapter
 
     private void checkForVehicleStateUpdate(StateResponse previousState,
                                             StateResponse currentState) {
-        if (previousState.getOperatingState() == currentState.getOperatingState()) {
-            return;
-        }
         LOG.debug("{}: onStateResponse.2 检查到状态发生变化，更新内核小车状态数据 ");
-
+        //        if (previousState.getOperatingState() != currentState.getOperatingState()) {
         getProcessModel().setVehicleState(translateVehicleState(currentState.getOperatingState()));
+        //        }
+        //        if (previousState.getEnergyLevel() != currentState.getEnergyLevel()) {
+        getProcessModel().setVehicleEnergyLevel(currentState.getEnergyLevel());
+        //        }
+        //        if (previousState.getLoadState() != currentState.getLoadState()) {
+        getProcessModel().setVehicleLoadHandlingDevices(Arrays.asList(new LoadHandlingDevice("load_handling_devices", currentState.getLoadState() == LoadState.FULL)));
+        //        }
     }
 
     private void checkOrderFinished(StateResponse previousState, StateResponse currentState) {
