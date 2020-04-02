@@ -307,18 +307,10 @@ public class TshCommAdapter
 
 
     @Override
-    public synchronized void onIncomingTelegram(Response response) {
+    public synchronized void  onIncomingTelegram(Response response) {
         requireNonNull(response, "response");
-
         // Remember that we have received a sign of life from the vehicle
         getProcessModel().setVehicleIdle(false);
-
-        //Check if the response matches the current request
-        if (!requestResponseMatcher.tryMatchWithCurrentRequest(response)) {
-            // XXX Either ignore the message or close the connection
-            return;
-        }
-
         if (response instanceof StateResponse) {
             onStateResponse((StateResponse) response);
         } else if (response instanceof OrderResponse) {
@@ -328,9 +320,6 @@ public class TshCommAdapter
                     getName(),
                     response.getClass().getName());
         }
-
-        //Send the next telegram if one is waiting
-        requestResponseMatcher.checkForSendingNextRequest();
     }
 
     @Override
@@ -370,6 +359,7 @@ public class TshCommAdapter
         }
 
         if (getProcessModel().isPeriodicStateRequestEnabled()) {
+            //此处重置一次周期计算，用于避免一个线程独占requestResponseMatcher.requests的队列。
             stateRequesterTask.restart();
         }
         return response;

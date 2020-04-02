@@ -50,7 +50,7 @@ public class RequestResponseMatcher {
         requireNonNull(request, "request");
         boolean emptyQueueBeforeEnqueue = requests.isEmpty();
 
-        LOG.debug("请求队列新增请求: {}， 当前待发送请求数为：{}", request, requests.size());
+        LOG.debug("请求队列新增请求:()， 当前待发送请求数为：{}", request.getId(), requests.size());
         requests.add(request);
         // 根据requests数量控制？？？ 此处是否需要控制？
         if (emptyQueueBeforeEnqueue) {
@@ -64,17 +64,25 @@ public class RequestResponseMatcher {
      * Checks if a telegram is enqueued and sends it.
      */
     public void checkForSendingNextRequest() {
-        LOG.debug("检查是否存在待发送请求.., 当前requests数量为:{}", requests.size());
-        if (peekCurrentRequest().isPresent()) {
-
-            Response response = telegramSender.sendTelegram(peekCurrentRequest().get());
-            if (Objects.isNull(response))return;
-
-            response.setId(peekCurrentRequest().get().getId());
-            telegramSender.onIncomingTelegram(response);
-        } else {
-            LOG.debug("未找到待发送请求.");
+        if (requests.isEmpty()) return;
+        //requests会被【小车状态周期查询任务进程】 、 及【小车指令分发进程】共用，估需要在此处做控制。
+        //另外，model中小车【小车状态周期查询任务进程】间隔建议大于一个请求+处理的时间周期， 不然容易锁死。。。
+        //<property name="example:stateRequestInterval" value="1500"/>
+        synchronized (requests) {
+            LOG.debug("检查是否存在待发送请求.., 当前requests数量为:{}", requests.size());
+            Request peek = requests.peek();
+            if (!Objects.isNull(peek)) {
+                Response response;
+                response = telegramSender.sendTelegram(peek);
+                if (Objects.isNull(response)) return;
+                telegramSender.onIncomingTelegram(response);
+                requests.remove(peek);
+            } else {
+                LOG.debug("未找到待发送请求.");
+            }
         }
+        //Send the next telegram if one is waiting
+        checkForSendingNextRequest();
     }
 
     /**

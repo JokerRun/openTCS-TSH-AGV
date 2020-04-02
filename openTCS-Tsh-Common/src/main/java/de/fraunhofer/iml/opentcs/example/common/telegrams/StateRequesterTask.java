@@ -50,7 +50,7 @@ public class StateRequesterTask {
     if (stateRequestTimer != null) {
       return;
     }
-    LOG.debug("启动小车状态周期性请求任务 StateRequesterTask.enable");
+    LOG.info("启动小车状态周期性请求任务 StateRequesterTask.enable");
     stateRequestTimer = new Timer(requestInterval, stateRequestAction);
     stateRequestTimer.start();
   }

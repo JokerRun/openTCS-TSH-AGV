@@ -41,6 +41,14 @@ public class VehicleSimulator {
     public String setAgvInfo(String requestJson) {
         VehicleState orderRequest = JSONObject.parseObject(requestJson, VehicleState.class);
         this.vehicleState.setEnergyLevel(orderRequest.getEnergyLevel());
+        this.vehicleState.setOperatingState(orderRequest.getOperatingState());
+        this.vehicleState.setLoadState(orderRequest.getLoadState());
+        this.vehicleState.setPositionId(orderRequest.getPositionId());
+
+
+        this.vehicleState.setLastReceivedOrderId(orderRequest.getLastReceivedOrderId());
+        this.vehicleState.setCurrOrderId(orderRequest.getCurrOrderId());
+        this.vehicleState.setLastFinishedOrderId(orderRequest.getLastFinishedOrderId());
 
         return this.vehicleState.toStateResponse();
     }
