@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 
@@ -65,7 +66,10 @@ public class RequestResponseMatcher {
     public void checkForSendingNextRequest() {
         LOG.debug("检查是否存在待发送请求.., 当前requests数量为:{}", requests.size());
         if (peekCurrentRequest().isPresent()) {
+
             Response response = telegramSender.sendTelegram(peekCurrentRequest().get());
+            if (Objects.isNull(response))return;
+
             response.setId(peekCurrentRequest().get().getId());
             telegramSender.onIncomingTelegram(response);
         } else {

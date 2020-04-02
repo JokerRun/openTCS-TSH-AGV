@@ -350,6 +350,7 @@ public class TshCommAdapter
         // If the telegram is an order, remember it.
         if (telegram instanceof StateRequest) {
             String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
+            if (Objects.isNull(stateResponseJson))return null;
             response = JSONObject.parseObject(stateResponseJson, StateResponse.class);
 
         } else if (telegram instanceof OrderRequest) {

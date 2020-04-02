@@ -72,7 +72,6 @@
         <property name="tcs:preferredAdapterClass" value="de.fraunhofer.iml.opentcs.example.commadapter.vehicle.TshCommAdapterFactory"/>
     </vehicle>
     <locationType name="Recharge station">
-        <allowedOperation name="CHARGE"/>
         <allowedOperation name="Charge"/>
         <allowedOperation name="NOP"/>
         <property name="tcs:defaultLocationSymbol" value="RECHARGE_GENERIC"/>

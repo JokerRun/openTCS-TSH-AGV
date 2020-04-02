@@ -42,7 +42,8 @@ public class OrderMapper {
         return new OrderRequest(Telegram.ID_DEFAULT,
                 orderIdCounter.getAndIncrement(),
                 extractDestinationId(command.getStep().getDestinationPoint()),
-                OrderAction.stringToAction(command.getFinalOperation()));
+//                OrderAction.stringToAction(command.isFinalMovement()? command.getFinalOperation():command.getOperation()));
+                OrderAction.stringToAction(command.getOperation()));
     }
 
     private static int extractDestinationId(Point point)

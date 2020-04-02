@@ -11,42 +11,20 @@ public enum OrderAction {
   /**
    * No action.
    */
-  NONE('N'),
+  NONE,
   /**
    * Action to load an object.
    */
-  LOAD('L'),
+  LOAD,
   /**
    * Action to unload an object.
    */
-  UNLOAD('U'),
+  UNLOAD,
   /**
    * Charge vehicle.
    */
-  CHARGE('C');
+  CHARGE;
 
-  /**
-   * The actual byte to put into the telegram to the vehicle.
-   */
-  private final byte actionByte;
-
-  /**
-   * Creates a new Action.
-   *
-   * @param action The actual byte to put into the telegram to the vehicle.
-   */
-  OrderAction(char action) {
-    this.actionByte = (byte) action;
-  }
-
-  /**
-   * Returns the actual byte to put into the telegram to the vehicle.
-   *
-   * @return The actual byte to put into the telegram to the vehicle.
-   */
-  public byte getActionByte() {
-    return actionByte;
-  }
 
   /**
    * Maps the given <code>actionString</code> to an Action.
