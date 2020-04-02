@@ -106,7 +106,7 @@ public class VehicleSimulator {
             } else if (OrderAction.UNLOAD == destAction) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.ACTING);
                 vehicleState.setEnergyLevel(vehicleState.getEnergyLevel() - 1);
-                vehicleState.setLoadState(VehicleState.LoadState.FULL);
+                vehicleState.setLoadState(VehicleState.LoadState.EMPTY);
                 vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             } else if (OrderAction.CHARGE == destAction) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.CHARGING);
