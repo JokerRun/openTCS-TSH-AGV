@@ -9,7 +9,7 @@
     <point name="11" xPosition="9650" yPosition="24400" zPosition="0" vehicleOrientationAngle="NaN" type="PARK_POSITION"/>
     <point name="12" xPosition="19650" yPosition="19750" zPosition="0" vehicleOrientationAngle="NaN" type="PARK_POSITION"/>
     <point name="13" xPosition="29750" yPosition="25350" zPosition="0" vehicleOrientationAngle="NaN" type="PARK_POSITION"/>
-    <point name="14" xPosition="34600" yPosition="22350" zPosition="0" vehicleOrientationAngle="NaN" type="PARK_POSITION"/>
+    <point name="14" xPosition="34600" yPosition="22350" zPosition="0" vehicleOrientationAngle="NaN" type="HALT_POSITION"/>
     <point name="15" xPosition="43550" yPosition="22200" zPosition="0" vehicleOrientationAngle="NaN" type="PARK_POSITION"/>
     <point name="16" xPosition="58800" yPosition="12450" zPosition="0" vehicleOrientationAngle="NaN" type="PARK_POSITION"/>
     <point name="17" xPosition="67850" yPosition="12950" zPosition="0" vehicleOrientationAngle="NaN" type="PARK_POSITION"/>
@@ -61,12 +61,14 @@
         <property name="example:stateRequestInterval" value="1500"/>
         <property name="example:vehicleHost" value="gateway002"/>
         <property name="example:vehiclePort" value="14001"/>
+        <property name="tcs:preferredParkingPosition" value="11"/>
         <property name="tcs:preferredAdapterClass" value="de.fraunhofer.iml.opentcs.example.commadapter.vehicle.TshCommAdapterFactory"/>
     </vehicle>
     <vehicle name="Vehicle-xialiao" length="1000" energyLevelCritical="30" energyLevelGood="90" energyLevelFullyRecharged="80" energyLevelSufficientlyRecharged="50" maxVelocity="10000" maxReverseVelocity="10000" type="">
         <property name="example:stateRequestInterval" value="1500"/>
         <property name="example:vehicleHost" value="gateway002"/>
         <property name="example:vehiclePort" value="14002"/>
+        <property name="tcs:preferredParkingPosition" value="10"/>
         <property name="tcs:preferredAdapterClass" value="de.fraunhofer.iml.opentcs.example.commadapter.vehicle.TshCommAdapterFactory"/>
     </vehicle>
     <locationType name="Recharge station">
@@ -114,7 +116,9 @@
         <member name="3"/>
         <member name="3 --- 4"/>
         <member name="4"/>
+        <member name="4 --- 5"/>
         <member name="4 --- 6"/>
+        <member name="5"/>
         <member name="6"/>
     </block>
     <visualLayout name="VLayout-1" scaleX="50.0" scaleY="50.0">
@@ -327,5 +331,5 @@
             <property name="POSITION_Y" value="1900"/>
         </modelLayoutElement>
     </visualLayout>
-    <property name="tcs:modelFileLastModified" value="2020-04-02T03:56:30.772Z"/>
+    <property name="tcs:modelFileLastModified" value="2020-04-02T09:55:10.561Z"/>
 </model>
