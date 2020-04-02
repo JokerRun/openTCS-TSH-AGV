@@ -11,6 +11,10 @@ import telegrams.OrderRequest;
 import telegrams.StateRequest;
 import telegrams.VehicleState;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class VehicleSimulator {
 
     public static void main(String[] args) {
@@ -22,29 +26,24 @@ public class VehicleSimulator {
     }
 
 
-    public String onStartRequest(){
+    public String onStartRequest() {
         StateRequest stateRequest = new StateRequest();
         String stateResponse = onIncomingTelegram(stateRequest);
         return stateResponse;
     }
 
-    public String onOrderRequest(String orderRequestJson){
+    public String onOrderRequest(String orderRequestJson) {
         OrderRequest orderRequest = JSONObject.parseObject(orderRequestJson, OrderRequest.class);
         String orderResponse = onIncomingTelegram(orderRequest);
         return orderResponse;
     }
 
-    public String setAgvInfo(String requestJson){
+    public String setAgvInfo(String requestJson) {
         VehicleState orderRequest = JSONObject.parseObject(requestJson, VehicleState.class);
         this.vehicleState.setEnergyLevel(orderRequest.getEnergyLevel());
-        
+
         return this.vehicleState.toStateResponse();
     }
-    
-
-
-
-
 
 
     /**
@@ -56,6 +55,9 @@ public class VehicleSimulator {
      * The internal state of the simulated vehicle.
      */
     private final VehicleState vehicleState = new VehicleState();
+
+    private final ScheduledExecutorService executor = Executors
+            .newSingleThreadScheduledExecutor(runnable -> new Thread(runnable, "taskExecutor"));
 
     public String onIncomingTelegram(Request request) {
         if (request instanceof StateRequest) {
@@ -90,7 +92,7 @@ public class VehicleSimulator {
             //执行移动: 更改小车运行状态为移动中 --> 更新小车当前点位
             if (vehicleState.getPositionId() != destId) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.MOVING);
-                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel()-1);
+                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel() - 1);
                 vehicleState.setPositionId(destId);
             }
             //执行装卸动作:
@@ -98,18 +100,22 @@ public class VehicleSimulator {
                 vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             } else if (OrderAction.LOAD == destAction) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.ACTING);
-                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel()-1);
+                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel() - 1);
                 vehicleState.setLoadState(VehicleState.LoadState.FULL);
                 vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             } else if (OrderAction.UNLOAD == destAction) {
                 vehicleState.setOperatingState(VehicleState.OperatingState.ACTING);
-                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel()-1);
+                vehicleState.setEnergyLevel(vehicleState.getEnergyLevel() - 1);
                 vehicleState.setLoadState(VehicleState.LoadState.FULL);
                 vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
-            }else if (OrderAction.CHARGE == destAction) {
-
+            } else if (OrderAction.CHARGE == destAction) {
+                vehicleState.setOperatingState(VehicleState.OperatingState.CHARGING);
+                Runnable completeChargingTask = () -> {
+                    vehicleState.setEnergyLevel(100);
+                    vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
+                };
+                executor.schedule(completeChargingTask, 10, TimeUnit.SECONDS);
             }
-                vehicleState.setOperatingState(VehicleState.OperatingState.IDLE);
             vehicleState.setLastFinishedOrderId(orderID);
         }
 
