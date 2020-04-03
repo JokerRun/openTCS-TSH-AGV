@@ -7,13 +7,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.inject.assistedinject.Assisted;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.comm.HttpUtil;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.exchange.TshProcessModelTO;
-import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.OrderRequest;
-import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.OrderResponse;
-import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.StateRequest;
-import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.StateResponse;
+import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.*;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.StateResponse.LoadState;
+import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.kuaicang.KcOrderMapper;
+import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.kuaicang.KcOrderRequest;
+import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.kuaicang.KcStateResponse;
+import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.kuaicang.KcStateResponseMapper;
 import de.fraunhofer.iml.opentcs.example.common.dispatching.LoadAction;
 import de.fraunhofer.iml.opentcs.example.common.telegrams.*;
+import org.opentcs.components.kernel.services.TCSObjectService;
 import org.opentcs.data.model.Vehicle;
 import org.opentcs.data.order.DriveOrder;
 import org.opentcs.drivers.vehicle.BasicVehicleCommAdapter;
@@ -52,6 +54,10 @@ public class TshCommAdapter
      * Maps movement commands from openTCS to the telegrams sent to the attached vehicle.
      */
     private final OrderMapper orderMapper;
+    private final TCSObjectService objectService;
+
+    private final KcOrderMapper kcOrderMapper;
+    private KcStateResponseMapper kcStateResponseMapper;
     /**
      * The components factory.
      */
@@ -75,17 +81,21 @@ public class TshCommAdapter
 
     /**
      * Creates a new instance.
-     *
-     * @param vehicle           The attached vehicle.
-     * @param orderMapper       The order mapper for movement commands.
-     * @param componentsFactory The components factory.
+     *  @param vehicle               The attached vehicle.
+     * @param orderMapper           The order mapper for movement commands.
+     * @param objectService
+     * @param componentsFactory     The components factory.
      */
     @Inject
     public TshCommAdapter(@Assisted Vehicle vehicle,
                           OrderMapper orderMapper,
+                          TCSObjectService objectService, KcOrderMapper kcOrderMapper,
                           TshAdapterComponentsFactory componentsFactory) {
         super(new TshProcessModel(vehicle), 1, 3, LoadAction.CHARGE);
         this.orderMapper = requireNonNull(orderMapper, "orderMapper");
+        this.objectService = objectService;
+        this.kcOrderMapper = requireNonNull(kcOrderMapper, "kcOrderMapper");
+        this.kcStateResponseMapper = kcStateResponseMapper;
         this.componentsFactory = requireNonNull(componentsFactory, "componentsFactory");
     }
 
@@ -100,6 +110,7 @@ public class TshCommAdapter
         LOG.info("初始化驱动{} ", getName());
         super.initialize();
         this.requestResponseMatcher = componentsFactory.createRequestResponseMatcher(this);
+        this.kcStateResponseMapper = componentsFactory.createKcStateResponseMapper(this.objectService);
         ActionListener actionListener = e -> {
             LOG.debug(">>>>>>>>>>>>>>>>> 小车状态周期请求任务(stateRequesterTask) 即将enqueueRequest到消息队列...");
             requestResponseMatcher.enqueueRequest(new StateRequest());
@@ -239,7 +250,8 @@ public class TshCommAdapter
         requireNonNull(cmd, "cmd");
         LOG.debug("{}:sendCommand收到系统下发的新命令: {}, 即将加入到orderIds,并enqueueRequest", getName(), cmd.getStep());
         try {
-            OrderRequest telegram = orderMapper.mapToOrder(cmd);
+            //            OrderRequest telegram = orderMapper.mapToOrder(cmd);
+            KcOrderRequest telegram = kcOrderMapper.mapToOrder(cmd);
             orderIds.put(cmd, telegram.getOrderId());
             LOG.debug("{}: Enqueuing order telegram with ID {}: {}, {}", getName(), telegram.getOrderId(), telegram.getDestinationId(), telegram.getDestinationAction());
 
@@ -307,11 +319,12 @@ public class TshCommAdapter
 
 
     @Override
-    public synchronized void  onIncomingTelegram(Response response) {
+    public synchronized void onIncomingTelegram(Response response) {
         requireNonNull(response, "response");
         // Remember that we have received a sign of life from the vehicle
         getProcessModel().setVehicleIdle(false);
-        if (response instanceof StateResponse) {
+        if (response instanceof KcStateResponse) {
+            kcStateResponseMapper.mapToStateResponse((KcStateResponse)response,getProcessModel().getCurrentState().getPositionId());
             onStateResponse((StateResponse) response);
         } else if (response instanceof OrderResponse) {
             LOG.debug("{}: Received a new order response: {}", getName(), response);
@@ -339,8 +352,8 @@ public class TshCommAdapter
         // If the telegram is an order, remember it.
         if (telegram instanceof StateRequest) {
             String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
-            if (Objects.isNull(stateResponseJson))return null;
-            response = JSONObject.parseObject(stateResponseJson, StateResponse.class);
+            if (Objects.isNull(stateResponseJson)) return null;
+            response = JSONObject.parseObject(stateResponseJson, KcStateResponse.class);
 
         } else if (telegram instanceof OrderRequest) {
             String orderRequestJson = JSONObject.toJSONString(telegram, true);
@@ -348,7 +361,7 @@ public class TshCommAdapter
             String orderResponseJson = null;
             try {
                 LOG.info("*********************** {}驱动: 即将发送指令： *************\n" +
-                        " {} \n *************************",getName(), orderRequestJson);
+                        " {} \n *************************", getName(), orderRequestJson);
                 orderResponseJson = HttpUtil.doPost("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/commandOrder", orderRequestJson);
                 // If the telegram is an order, remember it.
                 getProcessModel().setLastOrderSent((OrderRequest) telegram);

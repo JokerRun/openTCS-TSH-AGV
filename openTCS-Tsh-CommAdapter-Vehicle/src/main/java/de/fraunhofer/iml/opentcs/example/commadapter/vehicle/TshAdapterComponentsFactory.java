@@ -3,10 +3,13 @@
  */
 package de.fraunhofer.iml.opentcs.example.commadapter.vehicle;
 
+import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.kuaicang.KcStateResponseMapper;
 import de.fraunhofer.iml.opentcs.example.common.telegrams.RequestResponseMatcher;
 import de.fraunhofer.iml.opentcs.example.common.telegrams.StateRequesterTask;
 import de.fraunhofer.iml.opentcs.example.common.telegrams.TelegramSender;
 import java.awt.event.ActionListener;
+
+import org.opentcs.components.kernel.services.TCSObjectService;
 import org.opentcs.data.model.Vehicle;
 
 /**
@@ -39,4 +42,6 @@ public interface TshAdapterComponentsFactory {
    * @return The created {@link StateRequesterTask}.
    */
   StateRequesterTask createStateRequesterTask(ActionListener stateRequestAction);
+
+    KcStateResponseMapper createKcStateResponseMapper(TCSObjectService tshCommAdapter);
 }

@@ -1,7 +1,7 @@
 /**
  * Copyright (c) Fraunhofer IML
  */
-package de.fraunhofer.iml.opentcs.example.commadapter.vehicle;
+package de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams;
 
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.OrderAction;
 import de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.OrderRequest;
@@ -39,10 +39,11 @@ public class OrderMapper {
      */
     public OrderRequest mapToOrder(MovementCommand command)
             throws IllegalArgumentException {
+
+
         return new OrderRequest(Telegram.ID_DEFAULT,
                 orderIdCounter.getAndIncrement(),
                 extractDestinationId(command.getStep().getDestinationPoint()),
-//                OrderAction.stringToAction(command.isFinalMovement()? command.getFinalOperation():command.getOperation()));
                 OrderAction.stringToAction(command.getOperation()));
     }
 

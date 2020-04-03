@@ -7,6 +7,7 @@ import static com.google.common.base.Ascii.ETX;
 import static com.google.common.base.Ascii.STX;
 import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.primitives.Ints;
+import de.fraunhofer.iml.opentcs.example.common.dispatching.LoadAction;
 import de.fraunhofer.iml.opentcs.example.common.telegrams.Response;
 import static java.util.Objects.requireNonNull;
 
@@ -180,6 +181,35 @@ public class StateResponse
     /**
      * The vehicle's state is currently unknown.
      */
-    UNKNOWN
+    UNKNOWN;
+      /**
+       * Maps the given <code>operatingStateString</code> to an Action.
+       *
+       * @param operatingStateString
+       * @return The Action associated with the <code>operatingStateString</code>. Returns
+       * <code>Action.NONE</code> if there isn't any Action associated with the <code>operatingStateString</code>.
+       */
+      public static OperatingState stringToOperatingState(String operatingStateString) {
+          OperatingState operatingState = UNKNOWN;
+          if (operatingStateString.equals("ACTING")) {
+              operatingState = ACTING;
+          }
+          if (operatingStateString.equals("IDLE")) {
+              operatingState = IDLE;
+          }
+          if (operatingStateString.equals("MOVING")) {
+              operatingState = MOVING;
+          }
+          if (operatingStateString.equals("ERROR")) {
+              operatingState = ERROR;
+          }
+          if (operatingStateString.equals("CHARGING")) {
+              operatingState = CHARGING;
+          }
+
+
+
+          return operatingState;
+      }
   }
 }
