@@ -57,19 +57,19 @@
     <path name="8 --- 7" sourcePoint="8" destinationPoint="7" length="11924" routingCost="1" maxVelocity="1000" maxReverseVelocity="1000" locked="false"/>
     <path name="8 --- 9" sourcePoint="8" destinationPoint="9" length="2101" routingCost="1" maxVelocity="1000" maxReverseVelocity="1000" locked="false"/>
     <path name="9 --- 17" sourcePoint="9" destinationPoint="17" length="12951" routingCost="1" maxVelocity="1000" maxReverseVelocity="1000" locked="false"/>
-    <vehicle name="Vehicle-shangliao" length="1000" energyLevelCritical="30" energyLevelGood="90" energyLevelFullyRecharged="80" energyLevelSufficientlyRecharged="50" maxVelocity="10000" maxReverseVelocity="10000" type="">
+    <vehicle name="Vehicle-shangliao" length="1000" energyLevelCritical="30" energyLevelGood="50" energyLevelFullyRecharged="100" energyLevelSufficientlyRecharged="90" maxVelocity="10000" maxReverseVelocity="10000" type="">
         <property name="example:stateRequestInterval" value="1500"/>
         <property name="example:vehicleHost" value="gateway002"/>
         <property name="example:vehiclePort" value="14001"/>
-        <property name="tcs:preferredParkingPosition" value="11"/>
         <property name="tcs:preferredAdapterClass" value="de.fraunhofer.iml.opentcs.example.commadapter.vehicle.TshCommAdapterFactory"/>
+        <property name="tcs:assignedParkingPosition" value="11"/>
     </vehicle>
-    <vehicle name="Vehicle-xialiao" length="1000" energyLevelCritical="30" energyLevelGood="90" energyLevelFullyRecharged="80" energyLevelSufficientlyRecharged="50" maxVelocity="10000" maxReverseVelocity="10000" type="">
+    <vehicle name="Vehicle-xialiao" length="1000" energyLevelCritical="30" energyLevelGood="50" energyLevelFullyRecharged="100" energyLevelSufficientlyRecharged="90" maxVelocity="10000" maxReverseVelocity="10000" type="">
         <property name="example:stateRequestInterval" value="1500"/>
         <property name="example:vehicleHost" value="gateway002"/>
         <property name="example:vehiclePort" value="14002"/>
-        <property name="tcs:preferredParkingPosition" value="10"/>
         <property name="tcs:preferredAdapterClass" value="de.fraunhofer.iml.opentcs.example.commadapter.vehicle.TshCommAdapterFactory"/>
+        <property name="tcs:assignedParkingPosition" value="16"/>
     </vehicle>
     <locationType name="Recharge station">
         <allowedOperation name="Charge"/>
@@ -331,5 +331,5 @@
             <property name="POSITION_Y" value="1900"/>
         </modelLayoutElement>
     </visualLayout>
-    <property name="tcs:modelFileLastModified" value="2020-04-02T09:55:10.561Z"/>
+    <property name="tcs:modelFileLastModified" value="2020-04-03T01:49:12.589Z"/>
 </model>
