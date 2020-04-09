@@ -3,26 +3,30 @@ package de.fraunhofer.iml.opentcs.example.commadapter.vehicle.telegrams.kuaicang
 
 public class MoveCmd extends KcCmd {
     private CMD cmd;
-    private int sourceX;
-    private int sourceY;
-    private int targetX;
-    private int targetY;
+    private int source_x;
+    private int source_y;
+    private int target_x;
+    private int target_y;
 
     public MoveCmd() {
         cmd=CMD.DoMoveWithCodePosV2;
     }
 
 
-    public MoveCmd(int targetX, int targetY) {
+    public MoveCmd(int target_x, int target_y) {
         cmd=CMD.DoMoveWithCodePosV2;
-        this.targetX = targetX;
-        this.targetY = targetY;
+        this.target_x = target_x;
+        this.target_y = target_y;
     }
 
-    public MoveCmd(long targetX, long targetY) {
+
+
+    public MoveCmd(long source_x, long source_y, long target_x, long target_y) {
         cmd=CMD.DoMoveWithCodePosV2;
-        this.targetX = (int) targetX;
-        this.targetY = (int) targetY;
+        this.source_x = (int) source_x;
+        this.source_y = (int) source_y;
+        this.target_x = (int) target_x;
+        this.target_y = (int) target_y;
     }
 
     @Override
@@ -35,35 +39,35 @@ public class MoveCmd extends KcCmd {
         this.cmd = cmd;
     }
 
-    public int getSourceX() {
-        return sourceX;
+    public int getSource_x() {
+        return source_x;
     }
 
-    public void setSourceX(int sourceX) {
-        this.sourceX = sourceX;
+    public void setSource_x(int source_x) {
+        this.source_x = source_x;
     }
 
-    public int getSourceY() {
-        return sourceY;
+    public int getSource_y() {
+        return source_y;
     }
 
-    public void setSourceY(int sourceY) {
-        this.sourceY = sourceY;
+    public void setSource_y(int source_y) {
+        this.source_y = source_y;
     }
 
-    public int getTargetX() {
-        return targetX;
+    public int getTarget_x() {
+        return target_x;
     }
 
-    public void setTargetX(int targetX) {
-        this.targetX = targetX;
+    public void setTarget_x(int target_x) {
+        this.target_x = target_x;
     }
 
-    public int getTargetY() {
-        return targetY;
+    public int getTarget_y() {
+        return target_y;
     }
 
-    public void setTargetY(int targetY) {
-        this.targetY = targetY;
+    public void setTarget_y(int target_y) {
+        this.target_y = target_y;
     }
 }

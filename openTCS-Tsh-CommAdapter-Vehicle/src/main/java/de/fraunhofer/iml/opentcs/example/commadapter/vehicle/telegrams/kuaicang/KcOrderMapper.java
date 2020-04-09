@@ -52,21 +52,23 @@ public class KcOrderMapper {
 
 
         List<KcCmd> cmds = new ArrayList<>();
-        long x = command.getStep().getDestinationPoint().getPosition().getX();
-        long y = command.getStep().getDestinationPoint().getPosition().getY();
+        long sourceX = command.getStep().getSourcePoint().getPosition().getX();
+        long sourceY = command.getStep().getSourcePoint().getPosition().getY();
+        long targetX = command.getStep().getDestinationPoint().getPosition().getX();
+        long targetY = command.getStep().getDestinationPoint().getPosition().getY();
         if (command.getOperation().equals(LoadAction.LOAD)) {
-            cmds.add(new MoveCmd(x, y));
+            cmds.add(new MoveCmd(sourceX,sourceY,targetX, targetY));
             cmds.add(new LoadCmd());
         } else if (command.getOperation().equals(LoadAction.UNLOAD)) {
-            cmds.add(new MoveCmd(x, y));
+            cmds.add(new MoveCmd(sourceX,sourceY,targetX, targetY));
             cmds.add(new LoadCmd());
         }else
         if (command.getOperation().equals(LoadAction.CHARGE)) {
-            cmds.add(new ChargeCmd(x, y));
+            cmds.add(new ChargeCmd(targetX, targetY));
         }else
 //            if (command.getOperation().equals(LoadAction.NONE)||command.getOperation().equals(LoadAction.PARK))
             {
-            cmds.add(new MoveCmd(x, y));
+            cmds.add(new MoveCmd(sourceX,sourceY,targetX, targetY));
 
         }
 

@@ -68,8 +68,11 @@ public class RequestResponseMatcher {
         //requests会被【小车状态周期查询任务进程】 、 及【小车指令分发进程】共用，估需要在此处做控制。
         //另外，model中小车【小车状态周期查询任务进程】间隔建议大于一个请求+处理的时间周期， 不然容易锁死。。。
         //<property name="example:stateRequestInterval" value="1500"/>
-        synchronized (requests) {
-            LOG.debug("检查是否存在待发送请求.., 当前requests数量为:{}", requests.size());
+        // TODO. 死锁处理
+        LOG.debug("******** {}线程请求requests锁 **********", Thread.currentThread().getName());
+//        synchronized (requests) {
+            LOG.debug(" ********** {}线程拿到requests锁 ********** ", Thread.currentThread().getName());
+            LOG.info("检查是否存在待发送请求.., 当前requests数量为:{}", requests.size());
             Request peek = requests.peek();
             if (!Objects.isNull(peek)) {
                 Response response;
@@ -80,7 +83,9 @@ public class RequestResponseMatcher {
             } else {
                 LOG.debug("未找到待发送请求.");
             }
-        }
+            LOG.info(" ********** {}线程释放requests锁 ********** ", Thread.currentThread().getName());
+
+//        }
         //Send the next telegram if one is waiting
         checkForSendingNextRequest();
     }

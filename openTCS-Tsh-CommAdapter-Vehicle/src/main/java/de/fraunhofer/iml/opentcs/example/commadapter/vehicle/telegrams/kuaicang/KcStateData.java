@@ -4,8 +4,8 @@ public class KcStateData {
     /**
      * 点位
      */
-    private int x;
-    private int y;
+    private double x;
+    private double y;
 
     /**
      * 电量
@@ -30,7 +30,7 @@ public class KcStateData {
     /**
      * 已完成任务id
      */
-    private int orderId;
+    private int task_id;
 
     /**
      * 执行状态
@@ -41,19 +41,19 @@ public class KcStateData {
     public KcStateData() {
     }
 
-    public int getX() {
+    public double getX() {
         return x;
     }
 
-    public void setX(int x) {
+    public void setX(double x) {
         this.x = x;
     }
 
-    public int getY() {
+    public double getY() {
         return y;
     }
 
-    public void setY(int y) {
+    public void setY(double y) {
         this.y = y;
     }
 
@@ -89,12 +89,12 @@ public class KcStateData {
         this.heading = heading;
     }
 
-    public int getOrderId() {
-        return orderId;
+    public int getTask_id() {
+        return task_id;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setTask_id(int task_id) {
+        this.task_id = task_id;
     }
 
     public String getOpState() {

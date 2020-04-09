@@ -91,7 +91,7 @@ public class TshCommAdapter
                           OrderMapper orderMapper,
                           TCSObjectService objectService, KcOrderMapper kcOrderMapper,
                           TshAdapterComponentsFactory componentsFactory) {
-        super(new TshProcessModel(vehicle), 1, 3, LoadAction.CHARGE);
+        super(new TshProcessModel(vehicle), 1, 1, LoadAction.CHARGE);
         this.orderMapper = requireNonNull(orderMapper, "orderMapper");
         this.objectService = objectService;
         this.kcOrderMapper = requireNonNull(kcOrderMapper, "kcOrderMapper");
@@ -161,7 +161,8 @@ public class TshCommAdapter
     @Override
     protected synchronized void connectVehicle() {
 
-        String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
+//        String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
+        String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/query/agvInfo");
 
         if (!Objects.isNull(stateResponseJson)) {
             LOG.info("{}: 连接成功", getName());
@@ -351,24 +352,33 @@ public class TshCommAdapter
         Response response = null;
         // If the telegram is an order, remember it.
         if (telegram instanceof StateRequest) {
-            String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
+//            String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/getAgvInfo");
+            String stateResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/query/agvInfo");
             if (Objects.isNull(stateResponseJson)) return null;
             response = JSONObject.parseObject(stateResponseJson, KcStateResponse.class);
-
+            LOG.info("*********************** {}驱动: 收到agv报文： *************\n" +
+                    " {} \n *************************", getName(), stateResponseJson);
         } else if (telegram instanceof OrderRequest) {
-            String orderRequestJson = JSONObject.toJSONString(telegram, true);
+            List<OrderRequest> orderRequests = Arrays.asList(new OrderRequest[]{(OrderRequest) telegram});
+            String orderRequestJson = JSONObject.toJSONString(orderRequests, true);
             //            String orderResponseJson = HttpUtil.doGet("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/CommandOrder");
             String orderResponseJson = null;
             try {
                 LOG.info("*********************** {}驱动: 即将发送指令： *************\n" +
                         " {} \n *************************", getName(), orderRequestJson);
-                orderResponseJson = HttpUtil.doPost("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/commandOrder", orderRequestJson);
+//                orderResponseJson = HttpUtil.doPost("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/api/commandOrder", orderRequestJson);
+                orderResponseJson = HttpUtil.doPost("http://" + getProcessModel().getVehicleHost() + ":" + getProcessModel().getVehiclePort() + "/command/send_script_content", orderRequestJson);
+                if (!orderResponseJson.equals(" send success!"))return null;
                 // If the telegram is an order, remember it.
                 getProcessModel().setLastOrderSent((OrderRequest) telegram);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            response = JSONObject.parseObject(orderResponseJson, OrderResponse.class);
+//            TODO. 返回报文未封装
+
+//            response = JSONObject.parseObject(orderResponseJson, OrderResponse.class);
+              response = new OrderResponse();
+
         }
 
         if (getProcessModel().isPeriodicStateRequestEnabled()) {

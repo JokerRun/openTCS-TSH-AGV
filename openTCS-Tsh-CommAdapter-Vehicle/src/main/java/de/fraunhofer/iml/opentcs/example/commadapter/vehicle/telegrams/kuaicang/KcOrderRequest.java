@@ -9,7 +9,8 @@ import java.util.List;
 public class KcOrderRequest extends OrderRequest {
 
     private final List<KcCmd> cmds;
-
+    private int loopTimes=1;
+    private final int taskId;
 
     /**
      * Creates a new instance.
@@ -21,10 +22,23 @@ public class KcOrderRequest extends OrderRequest {
      */
     public KcOrderRequest(int telegramId, int taskId, int destinationId, OrderAction destinationAction,List<KcCmd> cmds) {
         super(telegramId, taskId, destinationId, destinationAction);
+        this.taskId=taskId;
         this.cmds=cmds;
+    }
+
+    public int getLoopTimes() {
+        return loopTimes;
+    }
+
+    public void setLoopTimes(int loopTimes) {
+        this.loopTimes = loopTimes;
     }
 
     public List<KcCmd> getCmds() {
         return cmds;
+    }
+
+    public int getTaskId() {
+        return taskId;
     }
 }
